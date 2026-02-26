@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DT DGTL – Digital Marketing & Ecommerce Consulting</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #f5f5f5;
+      min-height: 100vh;
+      background: #050816;
+      overflow-x: hidden;
+    }
+
+    /* --- ENHANCED ANIMATED BACKGROUND --- */
+    .blob-layer {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      filter: blur(60px);
+      opacity: 0.8;
+      overflow: hidden;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      mix-blend-mode: screen;
+    }
+
+    /* Blob 1: Indigo/Purple */
+    .blob:nth-child(1) {
+      width: 60vmax;
+      height: 60vmax;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.4) 0%, rgba(30, 27, 75, 0) 70%);
+      top: -10%;
+      left: -10%;
+      animation: float-1 22s infinite alternate ease-in-out;
+    }
+
+    /* Blob 2: Emerald/Green */
+    .blob:nth-child(2) {
+      width: 50vmax;
+      height: 50vmax;
+      background: radial-gradient(circle, rgba(34, 197, 94, 0.25) 0%, rgba(6, 78, 59, 0) 70%);
+      bottom: -10%;
+      right: -5%;
+      animation: float-2 28s infinite alternate ease-in-out;
+    }
+
+    /* Blob 3: Cyan/Blue */
+    .blob:nth-child(3) {
+      width: 45vmax;
+      height: 45vmax;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.3) 0%, rgba(15, 23, 42, 0) 70%);
+      top: 20%;
+      left: 20%;
+      animation: float-3 20s infinite alternate ease-in-out;
+    }
+
+    @keyframes float-1 {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(20vw, 15vh) scale(1.1); }
+    }
+
+    @keyframes float-2 {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(-25vw, -20vh) scale(1.2); }
+    }
+
+    @keyframes float-3 {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(15vw, 25vh) scale(0.9); }
+      100% { transform: translate(-10vw, 10vh) scale(1.1); }
+    }
+
+    /* --- LAYOUT & CONTENT --- */
+    .overlay {
+      min-height: 100vh;
+      background: radial-gradient(circle at top, rgba(15, 23, 42, 0.3), rgba(5, 8, 22, 0.85));
+      backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 80px 24px;
+    }
+
+    .wrapper {
+      text-align: center;
+      max-width: 1100px;
+      width: 100%;
+    }
+
+    .logo {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 2px solid #4f46e5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 24px;
+      margin: 0 auto 24px auto;
+      letter-spacing: 1px;
+      box-shadow: 0 0 35px rgba(79, 70, 229, 0.4);
+      background: rgba(15, 23, 42, 0.6);
+    }
+
+    h1 { font-size: 36px; margin-bottom: 8px; letter-spacing: -0.02em; }
+    .tagline { font-size: 18px; color: #cbd5f5; margin-bottom: 20px; opacity: 0.9; }
+    .intro-text { font-size: 16px; line-height: 1.6; color: #e5e7eb; margin-bottom: 40px; max-width: 640px; margin-left: auto; margin-right: auto; }
+
+    .email-btn {
+      font-size: 15px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      padding: 14px 28px;
+      border-radius: 999px;
+      border: 1px solid rgba(79, 70, 229, 0.6);
+      color: #e0e7ff;
+      text-decoration: none;
+      background: rgba(79, 70, 229, 0.1);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      margin-bottom: 60px;
+    }
+
+    .email-btn:hover {
+      background: rgba(79, 70, 229, 0.25);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(79, 70, 229, 0.3);
+      border-color: #4f46e5;
+    }
+
+    /* --- GRID --- */
+    .content-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      text-align: left;
+    }
+
+    .column-card {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 32px;
+      border-radius: 24px;
+      backdrop-filter: blur(15px);
+      transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .column-card:hover {
+      border-color: rgba(79, 70, 229, 0.5);
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .column-card h3 {
+      font-size: 14px;
+      margin-bottom: 24px;
+      color: #818cf8;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+
+    .column-card ul { list-style: none; }
+
+    .column-card ul li {
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 14px;
+      position: relative;
+      padding-left: 20px;
+      color: #d1d5db;
+    }
+
+    .column-card ul li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: #4f46e5;
+      font-weight: bold;
+    }
+
+    .project-item {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+
+    .project-item img {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      object-fit: cover;
+      background: #1e1b4b;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .project-item strong { display: block; font-size: 15px; color: #f5f5f5; }
+    .project-item p { font-size: 12px; color: #94a3b8; margin: 2px 0 4px 0; }
+    .project-item a { color: #818cf8; font-size: 12px; text-decoration: none; }
+    .project-item a:hover { text-decoration: underline; }
+
+    .contact-info p { font-size: 14px; color: #d1d5db; line-height: 1.6; }
+    .contact-info strong { color: #f5f5f5; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px; }
+
+    /* Responsive adjustments */
+    @media (max-width: 960px) {
+      .content-grid { grid-template-columns: 1fr; }
+      .wrapper { padding: 0 10px; }
+      .overlay { padding: 40px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="blob-layer">
+    <div class="blob"></div>
+    <div class="blob"></div>
+    <div class="blob"></div>
+  </div>
+
+  <div class="overlay">
+    <main class="wrapper">
+      <div class="logo">DT</div>
+
+      <h1>DT DGTL</h1>
+      <div class="tagline">Digital marketing & ecommerce consulting</div>
+
+      <p class="intro-text">
+        I help brands plan, launch, and scale profitable digital campaigns and ecommerce experiences – from strategy and ads to conversion-focused storefronts.
+      </p>
+
+      <a class="email-btn" href="mailto:danieltnthompson@gmail.com">
+        Get in touch — danieltnthompson@gmail.com
+      </a>
+
+      <section class="content-grid">
+        <div class="column-card">
+          <h3>Services</h3>
+          <ul>
+            <li>Performance marketing strategy & channel mix.</li>
+            <li>Paid social & search campaign optimisation.</li>
+            <li>Ecommerce funnel design and CRO.</li>
+            <li>Email & lifecycle marketing flows.</li>
+            <li>Analytics, tracking and dashboards.</li>
+            <li>Landing page audits & playbooks.</li>
+          </ul>
+        </div>
+
+        <div class="column-card">
+          <h3>Experience</h3>
+          <div class="project-item">
+            <img src="https://via.placeholder.com/100" alt="Kogan" />
+            <div>
+              <strong>Kogan.com</strong>
+              <p>Director of Marketing (until 2022)</p>
+              <a href="https://www.kogan.com/au/" target="_blank">kogan.com/au/</a>
+            </div>
+          </div>
+          <div class="project-item">
+            <img src="https://via.placeholder.com/100" alt="Click Frenzy" />
+            <div>
+              <strong>Click Frenzy</strong>
+              <p>Head of Marketing (until 2025)</p>
+              <a href="https://www.clickfrenzy.com.au" target="_blank">clickfrenzy.com.au</a>
+            </div>
+          </div>
+          <div class="project-item">
+            <img src="https://via.placeholder.com/100" alt="Trauve" />
+            <div>
+              <strong>Trauve</strong>
+              <p>Co-Founder</p>
+              <a href="https://www.trauve.com.au" target="_blank">trauve.com.au</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="column-card">
+          <h3>Get In Touch</h3>
+          <div class="contact-info">
+            <p><strong>Location</strong>Curepipe, Mauritius (Available Remotely)</p>
+            <br>
+            <p><strong>Direct Email</strong>danieltnthompson@gmail.com</p>
+            <br>
+            <p>Typically responds within 24 hours. Looking forward to discussing your next project.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+</body>
+</html>
