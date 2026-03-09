@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:unsplash.com)",
+      "Bash(gh repo rename danielthompson-digital --yes)",
+      "Bash(brew list gh)",
+      "WebFetch(domain:codepen.io)",
+      "mcp__claude_ai_Cloudflare_Developer_Platform__accounts_list",
+      "mcp__claude_ai_Cloudflare_Developer_Platform__workers_list",
+      "mcp__claude_ai_Cloudflare_Developer_Platform__set_active_account",
+      "mcp__claude_ai_Cloudflare_Developer_Platform__workers_get_worker_code",
+      "Bash(git remote set-url origin https://github.com/dathnoth/danielthompson-digital.git)",
+      "Bash(git add index.html images/global-marketplace.jpeg)",
+      "Bash(git commit:*)",
+      "Bash(git push origin main)",
+      "Bash(git add index.html images/dt-headshot2.png)"
+    ],
+    "additionalDirectories": [
+      "/Users/danielthompson/Desktop/WORK/keyzee"
+    ]
+  }
+}
