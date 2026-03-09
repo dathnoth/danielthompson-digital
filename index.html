@@ -282,6 +282,31 @@
 
     @keyframes tabFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
+    .pane-bullets {
+      list-style: none; display: flex; flex-direction: column; gap: 5px;
+    }
+    .pane-bullets li {
+      font-size: 12px; color: #7a9a84; line-height: 1.5;
+      padding-left: 14px; position: relative;
+    }
+    .pane-bullets li::before { content: '–'; position: absolute; left: 0; color: #2d5a3d; }
+
+    .pane-cta {
+      margin-top: 4px;
+    }
+    .pane-cta-btn {
+      font-family: 'Silkscreen', monospace;
+      font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 8px 18px; border-radius: 100px;
+      border: 1px solid rgba(125, 168, 122, 0.3);
+      background: transparent; color: #7da87a; cursor: pointer;
+      transition: border-color 0.25s, color 0.25s, background 0.25s;
+    }
+    .pane-cta-btn:hover {
+      border-color: rgba(125, 168, 122, 0.6);
+      color: #a8bf9a; background: rgba(30, 107, 74, 0.1);
+    }
+
     .portfolio-empty {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       padding: 48px 24px; gap: 10px;
@@ -326,32 +351,60 @@
 
     /* --- PANEL: EXPERIENCE --- */
     .exp-card {
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-      padding: 20px 22px;
-      margin-bottom: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 18px 0;
     }
-    .exp-card:last-child { margin-bottom: 0; border-bottom: none; }
-    .exp-header {
+    .exp-card:last-child { border-bottom: none; padding-bottom: 0; }
+
+    /* Two-column row on desktop */
+    .exp-row {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+
+    /* Left: company identity + roles */
+    .exp-meta {
+      flex: 0 0 24%;
+      min-width: 0;
+    }
+    .exp-company-header {
       display: flex;
       align-items: center;
-      gap: 14px;
-      margin-bottom: 14px;
-      padding-bottom: 14px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      gap: 10px;
+      margin-bottom: 10px;
     }
-    .exp-logo { width: 42px; height: 42px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; object-fit: cover; }
-    .exp-company-name { font-size: 15px; font-weight: 700; color: #f5f5f5; display: block; }
-    .exp-tenure { font-size: 11px; color: #7da87a; display: block; margin-top: 2px; }
-    .exp-label {
+    .exp-logo { width: 36px; height: 36px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; object-fit: cover; }
+    .exp-company-name { font-size: 13px; font-weight: 700; color: #f5f5f5; display: block; line-height: 1.3; }
+    .exp-tenure { font-size: 10px; color: #7da87a; display: block; margin-top: 2px; }
+    .exp-company-name a, .exp-tenure a { color: inherit; text-decoration: none; }
+    .exp-company-name a:hover { color: #a8bf9a; }
+
+    .exp-roles { display: flex; flex-direction: column; gap: 4px; }
+    .exp-role { display: flex; flex-direction: column; gap: 1px; }
+    .exp-role-title {
+      font-size: 11px; color: #c9d5c3; line-height: 1.4;
+    }
+    .exp-role-title a {
+      color: #7da87a; text-decoration: none;
+      border-bottom: 1px solid rgba(125, 168, 122, 0.25);
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .exp-role-title a:hover { color: #a8bf9a; border-color: rgba(168, 191, 154, 0.5); }
+    .exp-role-dates { font-size: 10px; color: #4a7c5a; }
+
+    /* Right: achievements */
+    .exp-achievements-wrap { flex: 1; }
+    .exp-achievements-label {
       font-size: 9px; text-transform: uppercase; letter-spacing: 0.14em;
-      color: #3d6b4f; margin: 12px 0 7px;
+      color: #3d6b4f; margin-bottom: 7px;
     }
-    .exp-timeline { display: flex; flex-direction: column; gap: 5px; }
-    .exp-role { display: flex; align-items: baseline; gap: 0; }
-    .exp-role-title { font-size: 12px; color: #c9d5c3; }
-    .exp-role-title::after { content: ' ·'; color: #2d5a3d; margin-right: 6px; }
-    .exp-role-dates { font-size: 11px; color: #6b9e78; white-space: nowrap; flex-shrink: 0; }
-    .exp-achievements { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+    .exp-achievements {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
     .exp-achievements li {
       font-size: 12px; color: #7a9a84; line-height: 1.5;
       padding-left: 14px; position: relative;
@@ -411,6 +464,10 @@
       .pane-inner { flex-direction: column; }
       .img-wrapper { flex: none; min-height: 160px; }
 
+      /* Experience: stack on mobile */
+      .exp-row { flex-direction: column; gap: 10px; }
+      .exp-meta { flex: none; width: 100%; }
+
       /* Contact: stack on mobile */
       .contact-layout { flex-direction: column; }
       .direct-contact-row { flex-direction: row; flex-wrap: wrap; gap: 12px; }
@@ -446,10 +503,11 @@
       <div class="section-nav">
         <button class="section-btn" data-section="experience">Experience</button>
         <button class="section-btn" data-section="services">Services</button>
+        <button class="section-btn" data-section="portfolio">Portfolio</button>
         <button class="section-btn" data-section="contact">Contact</button>
       </div>
 
-      <div class="hero-footer">&copy; 2026 danielthompson.digital</div>
+      <div class="hero-footer">&copy; 2026 danielthompson.digital &nbsp;&middot;&nbsp; +230 5779 1771</div>
     </div>
 
     <!-- PANELS -->
@@ -460,86 +518,106 @@
           <div class="panel-body">
             <h3>Experience</h3>
 
-            <!-- KOGAN -->
+            <!-- GLOBAL MARKETPLACE -->
             <div class="exp-card">
-              <div class="exp-header">
-                <img src="images/kgn-dtdl.jpg" alt="Kogan" class="exp-logo">
-                <div>
-                  <span class="exp-company-name">Kogan.com</span>
-                  <span class="exp-tenure">2015 – 2022 · 7 years</span>
+              <div class="exp-row">
+                <div class="exp-meta">
+                  <div class="exp-company-header">
+                    <img src="images/global-marketplace.jpeg" alt="Global Marketplace" class="exp-logo">
+                    <div>
+                      <span class="exp-company-name">Global Marketplace</span>
+                      <span class="exp-tenure">2022 – 2025 · 3 yrs</span>
+                    </div>
+                  </div>
+                  <div class="exp-roles">
+                    <div class="exp-role">
+                      <span class="exp-role-title">Head of Marketing</span>
+                      <span class="exp-role-title" style="color:#4a7c5a; font-size:10px;">
+                        <a href="https://www.clickfrenzy.com.au" target="_blank">Click Frenzy</a> &middot;
+                        <a href="https://www.powerretail.com.au" target="_blank">Power Retail</a> &middot;
+                        <a href="https://www.grabone.co.nz" target="_blank">GrabOne</a>
+                      </span>
+                      <span class="exp-role-dates">2023 – 2025</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="exp-achievements-wrap">
+                  <p class="exp-achievements-label">Achievements</p>
+                  <ul class="exp-achievements">
+                    <li>Led end-to-end marketing for Australia's premier e-commerce sale event across Free-to-Air TV, DOOH, Radio, Meta, TikTok, and Google Ads</li>
+                    <li>Established a multi-year co-branded partnership with PayPal, driving a major integrated sales event across digital and traditional media</li>
+                    <li>Launched a new WordPress site delivering a 56% increase in display ad revenue through improved UX and ad placement monetisation</li>
+                    <li>Rebuilt the Braze CRM recommendation engine with AI, delivering personalised content to customers on a one-to-one basis</li>
+                  </ul>
                 </div>
               </div>
-              <p class="exp-label">Positions</p>
-              <div class="exp-timeline">
-                <div class="exp-role">
-                  <span class="exp-role-title">Director of Marketing</span>
-                  <span class="exp-role-dates">2020 – 2022</span>
-                </div>
-                <div class="exp-role">
-                  <span class="exp-role-title">Head of Marketing Content</span>
-                  <span class="exp-role-dates">2018 – 2020</span>
-                </div>
-                <div class="exp-role">
-                  <span class="exp-role-title">Email Marketing Executive & Digital Designer</span>
-                  <span class="exp-role-dates">2015 – 2018</span>
-                </div>
-              </div>
-              <p class="exp-label">Achievements</p>
-              <ul class="exp-achievements">
-                <li>Led a 30+ person team across performance marketing, CRM, and digital strategy at Australia's largest pure-play online retailer</li>
-                <li>Placeholder achievement — update with real content</li>
-                <li>Placeholder achievement — update with real content</li>
-              </ul>
             </div>
 
-            <!-- CLICK FRENZY -->
+            <!-- KOGAN -->
             <div class="exp-card">
-              <div class="exp-header">
-                <img src="images/cf-dtdl.jpg" alt="Click Frenzy" class="exp-logo">
-                <div>
-                  <span class="exp-company-name">Click Frenzy</span>
-                  <span class="exp-tenure">2022 – 2025 · 3 years</span>
+              <div class="exp-row">
+                <div class="exp-meta">
+                  <div class="exp-company-header">
+                    <img src="images/kgn-dtdl.jpg" alt="Kogan" class="exp-logo">
+                    <div>
+                      <span class="exp-company-name"><a href="https://www.kogan.com/au/" target="_blank">Kogan.com</a></span>
+                      <span class="exp-tenure">2013 – 2022 · 7 yrs</span>
+                    </div>
+                  </div>
+                  <div class="exp-roles">
+                    <div class="exp-role">
+                      <span class="exp-role-title">Director of Marketing</span>
+                      <span class="exp-role-dates">2021 – 2022</span>
+                    </div>
+                    <div class="exp-role">
+                      <span class="exp-role-title">Head of Marketing Content</span>
+                      <span class="exp-role-dates">2015 – 2021</span>
+                    </div>
+                    <div class="exp-role">
+                      <span class="exp-role-title">Email Marketing & Digital Designer</span>
+                      <span class="exp-role-dates">2013 – 2015</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="exp-achievements-wrap">
+                  <p class="exp-achievements-label">Achievements</p>
+                  <ul class="exp-achievements">
+                    <li>Led a 30+ person team across performance marketing, CRM, and digital strategy at Australia's largest pure-play online retailer</li>
+                    <li>Grew Kogan First loyalty program to 300,000+ paid subscribers, generating $10M+ in subscription revenue</li>
+                    <li>Managed a $70M marketing budget spanning SEM, SEO, email, social, content, direct mail, and affiliates</li>
+                    <li>Grew Kogan Active customer count by 80%+ through strategic scaling of spend and data-driven targeting</li>
+                  </ul>
                 </div>
               </div>
-              <p class="exp-label">Positions</p>
-              <div class="exp-timeline">
-                <div class="exp-role">
-                  <span class="exp-role-title">Head of Marketing</span>
-                  <span class="exp-role-dates">2023 – 2025</span>
-                </div>
-                <div class="exp-role">
-                  <span class="exp-role-title">Placeholder Position</span>
-                  <span class="exp-role-dates">2022 – 2023</span>
-                </div>
-              </div>
-              <p class="exp-label">Achievements</p>
-              <ul class="exp-achievements">
-                <li>Delivered end-to-end digital strategy across Australia's most iconic online shopping event platform</li>
-                <li>Placeholder achievement — update with real content</li>
-              </ul>
             </div>
 
             <!-- TRAUVE -->
             <div class="exp-card">
-              <div class="exp-header">
-                <img src="images/trauve-dtdl.jpg" alt="Trauve" class="exp-logo">
-                <div>
-                  <span class="exp-company-name">Trauve.com.au</span>
-                  <span class="exp-tenure">2024 – Present</span>
+              <div class="exp-row">
+                <div class="exp-meta">
+                  <div class="exp-company-header">
+                    <img src="images/trauve-dtdl.jpg" alt="Trauve" class="exp-logo">
+                    <div>
+                      <span class="exp-company-name"><a href="https://www.trauve.com.au" target="_blank">Trauve.com.au</a></span>
+                      <span class="exp-tenure">2022 – Present</span>
+                    </div>
+                  </div>
+                  <div class="exp-roles">
+                    <div class="exp-role">
+                      <span class="exp-role-title">Co-Founder</span>
+                      <span class="exp-role-dates">2024 – Present</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="exp-achievements-wrap">
+                  <p class="exp-achievements-label">Achievements</p>
+                  <ul class="exp-achievements">
+                    <li>Co-founded a bootstrapped digital marketplace, onboarding 50+ merchants and 3,000+ products using CS-Cart</li>
+                    <li>Developed and executed full digital marketing strategy including email, Google Ads, SEO, and on-site merchandising</li>
+                    <li>Built bespoke stock synchronisation features, improving automation and operational efficiency</li>
+                  </ul>
                 </div>
               </div>
-              <p class="exp-label">Positions</p>
-              <div class="exp-timeline">
-                <div class="exp-role">
-                  <span class="exp-role-title">Co-Founder</span>
-                  <span class="exp-role-dates">2024 – Present</span>
-                </div>
-              </div>
-              <p class="exp-label">Achievements</p>
-              <ul class="exp-achievements">
-                <li>Built a curated online marketplace for independent brands from the ground up — platform architecture, vendor onboarding, and full commercial framework</li>
-                <li>Placeholder achievement — update with real content</li>
-              </ul>
             </div>
 
           </div>
@@ -551,16 +629,24 @@
             <div class="tabs-nav">
               <div class="tab-btn active" data-index="0">Digital Marketing<span></span></div>
               <div class="tab-btn" data-index="1">Ecommerce<span></span></div>
-              <div class="tab-btn" data-index="2">Website Build<span></span></div>
+              <div class="tab-btn" data-index="2">Website Development<span></span></div>
               <div class="tab-btn" data-index="3">Email/CRM<span></span></div>
-              <div class="tab-btn" data-index="4">Portfolio<span></span></div>
             </div>
             <div class="tabs-content">
               <div class="tab-pane active">
                 <div class="pane-inner">
                   <div class="pane-text">
                     <p class="pane-title">Performance Marketing</p>
-                    <p class="pane-desc">Drive measurable results across every paid channel — Google Ads, Meta, TikTok and beyond. I build AI-enhanced, data-driven strategies that put your brand in front of high-intent audiences and turn clicks into customers, efficiently and at scale.</p>
+                    <p class="pane-desc">Drive measurable results across every paid channel — Google Ads, Meta, TikTok and beyond. I build AI-enhanced, data-driven strategies that put your brand in front of high-intent audiences and convert efficiently at scale.</p>
+                    <ul class="pane-bullets">
+                      <li>Paid search & shopping (Google, Bing)</li>
+                      <li>Paid social (Meta, TikTok, Pinterest)</li>
+                      <li>Full-funnel strategy, attribution & reporting</li>
+                      <li>Creative direction & copy optimisation</li>
+                    </ul>
+                    <div class="pane-cta">
+                      <button class="pane-cta-btn open-contact-btn">Work with me &rarr;</button>
+                    </div>
                   </div>
                   <div class="img-wrapper">
                     <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600" class="pane-img" alt="Performance">
@@ -571,7 +657,16 @@
                 <div class="pane-inner">
                   <div class="pane-text">
                     <p class="pane-title">Ecommerce Optimisation</p>
-                    <p class="pane-desc">Whether you're launching or scaling, I help brands build ecommerce operations that convert. From platform strategy and UX audits to growth experimentation, I identify the friction killing your revenue and engineer the commercial engine your brand deserves.</p>
+                    <p class="pane-desc">Whether you're launching or scaling, I help brands build ecommerce operations that convert. I identify the friction killing your revenue and engineer the commercial engine your brand deserves — from platform strategy to growth experimentation.</p>
+                    <ul class="pane-bullets">
+                      <li>Platform strategy & migration (Shopify, WooCommerce, CS-Cart)</li>
+                      <li>Conversion rate optimisation & UX audits</li>
+                      <li>Merchandising, pricing & promotional strategy</li>
+                      <li>Analytics setup & performance reporting</li>
+                    </ul>
+                    <div class="pane-cta">
+                      <button class="pane-cta-btn open-contact-btn">Work with me &rarr;</button>
+                    </div>
                   </div>
                   <div class="img-wrapper">
                     <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=600" class="pane-img" alt="Ecommerce">
@@ -582,7 +677,16 @@
                 <div class="pane-inner">
                   <div class="pane-text">
                     <p class="pane-title">Website Development</p>
-                    <p class="pane-desc">Your website is your most powerful sales asset. I build fast, modern, mobile-first sites and storefronts using the latest technology — architected to convert, optimised for search, and built to scale with your brand.</p>
+                    <p class="pane-desc">Your website is your most powerful sales asset. I build fast, modern, mobile-first sites and storefronts — architected to convert, optimised for search, and built to grow with your brand.</p>
+                    <ul class="pane-bullets">
+                      <li>WordPress, Shopify & custom storefronts</li>
+                      <li>Mobile-first, performance-optimised builds</li>
+                      <li>SEO architecture & technical foundations</li>
+                      <li>Ongoing support & iterative improvement</li>
+                    </ul>
+                    <div class="pane-cta">
+                      <button class="pane-cta-btn open-contact-btn">Work with me &rarr;</button>
+                    </div>
                   </div>
                   <div class="img-wrapper">
                     <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=600" class="pane-img" alt="Web Dev">
@@ -593,19 +697,32 @@
                 <div class="pane-inner">
                   <div class="pane-text">
                     <p class="pane-title">Email & CRM</p>
-                    <p class="pane-desc">Turn one-time buyers into loyal customers. I design and automate intelligent lifecycle flows — from welcome sequences to win-back campaigns — using AI-driven segmentation to increase retention and maximise lifetime value.</p>
+                    <p class="pane-desc">Turn one-time buyers into loyal customers. I design and automate intelligent lifecycle flows using AI-driven segmentation to increase retention and maximise lifetime value — from welcome sequences to win-back campaigns.</p>
+                    <ul class="pane-bullets">
+                      <li>Welcome, abandonment & win-back flows</li>
+                      <li>AI-powered segmentation & personalisation</li>
+                      <li>Platform setup & migration (Klaviyo, Braze, Mailchimp)</li>
+                      <li>List growth, deliverability & campaign strategy</li>
+                    </ul>
+                    <div class="pane-cta">
+                      <button class="pane-cta-btn open-contact-btn">Work with me &rarr;</button>
+                    </div>
                   </div>
                   <div class="img-wrapper">
                     <img src="https://images.unsplash.com/photo-1557200134-90327ee9fafa?auto=format&fit=crop&q=80&w=600" class="pane-img" alt="Email CRM">
                   </div>
                 </div>
               </div>
-              <div class="tab-pane">
-                <div class="portfolio-empty">
-                  <p class="portfolio-label">Portfolio</p>
-                  <p class="portfolio-sub">Coming soon — case studies and work samples will be added here.</p>
-                </div>
-              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="content-panel" id="panel-portfolio">
+          <div class="panel-body">
+            <h3>Portfolio</h3>
+            <div class="portfolio-empty">
+              <p class="portfolio-label">Coming Soon</p>
+              <p class="portfolio-sub">Case studies and work samples will be added here shortly.</p>
             </div>
           </div>
         </div>
@@ -629,7 +746,7 @@
                 <div id="form-container">
                   <form action="https://formspree.io/f/xlgwrkel" method="POST" id="contact-form" class="contact-form">
                     <input type="text" name="name" placeholder="Name" required>
-                    <input type="email" name="email" placeholder="Email" required>
+                    <input type="email" name="email" placeholder="Your Email" required>
                     <textarea name="message" placeholder="Message" required></textarea>
                     <button type="submit" class="submit-btn">Send Message</button>
                   </form>
@@ -729,6 +846,18 @@
     const servicesPanel = document.getElementById('panel-services');
     servicesPanel.addEventListener('mouseenter', () => { isPaused = true; tabs[currentIndex].querySelector('span').style.transition = 'none'; });
     servicesPanel.addEventListener('mouseleave', () => { isPaused = false; showTab(currentIndex); startRotation(); });
+
+    // "Work with me" CTAs → open contact panel
+    document.querySelectorAll('.open-contact-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        sectionBtns.forEach(b => b.classList.remove('active'));
+        contentPanels.forEach(p => p.classList.remove('active'));
+        const contactBtn = document.querySelector('[data-section="contact"]');
+        contactBtn.classList.add('active');
+        document.getElementById('panel-contact').classList.add('active');
+        app.classList.add('has-panel');
+      });
+    });
 
     document.querySelectorAll('a, button, input, textarea').forEach(el => {
       el.addEventListener('mouseenter', () => document.body.classList.add('cursor-active'));
