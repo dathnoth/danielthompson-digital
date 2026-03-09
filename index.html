@@ -125,7 +125,7 @@
 
     .section-btn {
       font-family: 'Silkscreen', monospace;
-      font-size: 9px;
+      font-size: 11px;
       letter-spacing: 0.1em;
       text-transform: uppercase;
       padding: 11px 24px;
@@ -151,7 +151,7 @@
 
     /* --- HERO IDENTITY --- */
     .headshot-wrap {
-      position: relative; width: 128px; height: 128px;
+      position: relative; width: 250px; height: 250px;
       margin: 0 auto 20px auto;
       animation: logo-float 6s infinite ease-in-out;
     }
@@ -307,6 +307,98 @@
       color: #a8bf9a; background: rgba(30, 107, 74, 0.1);
     }
 
+    .portfolio-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .portfolio-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    /* iPhone mockup */
+    .iphone-wrap {
+      position: relative;
+      width: 120px;
+      height: 240px;
+      background: #0a1a0f;
+      border-radius: 28px;
+      border: 1.5px solid rgba(255, 255, 255, 0.18);
+      box-shadow:
+        0 0 0 1px rgba(0,0,0,0.6),
+        inset 0 0 0 1px rgba(255,255,255,0.04),
+        0 24px 48px rgba(0,0,0,0.5),
+        0 0 0 6px rgba(0,0,0,0.25);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .iphone-wrap:hover {
+      transform: translateY(-4px);
+      box-shadow:
+        0 0 0 1px rgba(0,0,0,0.6),
+        inset 0 0 0 1px rgba(255,255,255,0.04),
+        0 32px 64px rgba(0,0,0,0.6),
+        0 0 0 6px rgba(0,0,0,0.25);
+    }
+    /* Dynamic island */
+    .iphone-wrap::before {
+      content: '';
+      position: absolute; top: 10px; left: 50%;
+      transform: translateX(-50%);
+      width: 40px; height: 10px;
+      background: #000; border-radius: 6px;
+      z-index: 10;
+    }
+    /* Side button */
+    .iphone-wrap::after {
+      content: '';
+      position: absolute; top: 60px; right: -3px;
+      width: 3px; height: 36px;
+      background: rgba(255,255,255,0.12); border-radius: 2px;
+    }
+    .iphone-screen {
+      position: absolute; inset: 0;
+      border-radius: 26px; overflow: hidden;
+    }
+    .iphone-screen img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .iphone-screen-placeholder {
+      width: 100%; height: 100%;
+      background: linear-gradient(160deg, #0d2e1a 0%, #1e6b4a 50%, #0a3d22 100%);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .iphone-screen-placeholder span {
+      font-size: 9px; color: rgba(125,168,122,0.5);
+      text-transform: uppercase; letter-spacing: 0.12em;
+    }
+
+    .portfolio-card-info {
+      width: 100%; text-align: center;
+    }
+    .portfolio-card-title {
+      font-size: 12px; font-weight: 600; color: #c9d5c3; margin-bottom: 5px;
+    }
+    .portfolio-card-desc {
+      font-size: 11px; color: #4a7c5a; line-height: 1.5;
+    }
+
+    /* Empty slot */
+    .portfolio-card-empty .iphone-wrap {
+      border-style: dashed;
+      border-color: rgba(125, 168, 122, 0.15);
+      background: rgba(255,255,255,0.02);
+      cursor: default;
+    }
+    .portfolio-card-empty .iphone-wrap:hover { transform: none; box-shadow: 0 0 0 1px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.04), 0 24px 48px rgba(0,0,0,0.5), 0 0 0 6px rgba(0,0,0,0.25); }
+    .portfolio-card-empty .portfolio-card-title { color: #2d5a3d; }
+
     .portfolio-empty {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       padding: 48px 24px; gap: 10px;
@@ -324,9 +416,10 @@
     .contact-info { flex: 1; }
     .contact-form-wrap { flex: 1; }
 
-    .profile-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+    .profile-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
+    .profile-header-text { display: flex; flex-direction: column; gap: 20px; }
     .profile-photo {
-      width: 58px; height: 58px; border-radius: 50%; object-fit: cover;
+      width: 100px; height: 100px; border-radius: 50%; object-fit: cover;
       border: 2px solid rgba(125, 168, 122, 0.5); flex-shrink: 0;
     }
     .profile-blurb { font-size: 13px; color: #c9d5c3; line-height: 1.55; }
@@ -375,15 +468,15 @@
       margin-bottom: 10px;
     }
     .exp-logo { width: 36px; height: 36px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; object-fit: cover; }
-    .exp-company-name { font-size: 13px; font-weight: 700; color: #f5f5f5; display: block; line-height: 1.3; }
-    .exp-tenure { font-size: 10px; color: #7da87a; display: block; margin-top: 2px; }
+    .exp-company-name { font-size: 15px; font-weight: 700; color: #f5f5f5; display: block; line-height: 1.3; }
+    .exp-tenure { font-size: 12px; color: #7da87a; display: block; margin-top: 2px; }
     .exp-company-name a, .exp-tenure a { color: inherit; text-decoration: none; }
     .exp-company-name a:hover { color: #a8bf9a; }
 
     .exp-roles { display: flex; flex-direction: column; gap: 4px; }
     .exp-role { display: flex; flex-direction: column; gap: 1px; }
     .exp-role-title {
-      font-size: 11px; color: #c9d5c3; line-height: 1.4;
+      font-size: 13px; color: #c9d5c3; line-height: 1.4;
     }
     .exp-role-title a {
       color: #7da87a; text-decoration: none;
@@ -391,12 +484,12 @@
       transition: color 0.2s, border-color 0.2s;
     }
     .exp-role-title a:hover { color: #a8bf9a; border-color: rgba(168, 191, 154, 0.5); }
-    .exp-role-dates { font-size: 10px; color: #4a7c5a; }
+    .exp-role-dates { font-size: 12px; color: #4a7c5a; }
 
     /* Right: achievements */
     .exp-achievements-wrap { flex: 1; }
     .exp-achievements-label {
-      font-size: 9px; text-transform: uppercase; letter-spacing: 0.14em;
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em;
       color: #3d6b4f; margin-bottom: 7px;
     }
     .exp-achievements {
@@ -406,7 +499,7 @@
       gap: 5px;
     }
     .exp-achievements li {
-      font-size: 12px; color: #7a9a84; line-height: 1.5;
+      font-size: 13px; color: #7a9a84; line-height: 1.5;
       padding-left: 14px; position: relative;
     }
     .exp-achievements li::before { content: '–'; position: absolute; left: 0; color: #2d5a3d; }
@@ -464,6 +557,9 @@
       .pane-inner { flex-direction: column; }
       .img-wrapper { flex: none; min-height: 160px; }
 
+      /* Portfolio: single column on mobile */
+      .portfolio-grid { grid-template-columns: 1fr; }
+
       /* Experience: stack on mobile */
       .exp-row { flex-direction: column; gap: 10px; }
       .exp-meta { flex: none; width: 100%; }
@@ -490,7 +586,7 @@
     <!-- HERO -->
     <div class="hero-col">
       <div class="headshot-wrap">
-        <img src="images/dt-headshot.png" alt="Daniel Thompson">
+        <img src="images/dt-headshot2.png" alt="Daniel Thompson">
       </div>
       <div class="hero-name">
         <span class="name-first">daniel</span>
@@ -498,7 +594,7 @@
         <span class="name-tld">.digital</span>
       </div>
       <div class="tagline">Digital Strategy & Ecommerce Growth</div>
-      <p class="intro-text">I partner with brands to unlock their full potential online — combining ecommerce expertise, performance marketing, and AI-powered technology to drive real, measurable growth.</p>
+      <p class="intro-text">I work with brands to unlock their full digital potential online, combining ecommerce expertise, performance marketing, and AI-powered technology to drive real, measurable growth and results.</p>
 
       <div class="section-nav">
         <button class="section-btn" data-section="experience">Experience</button>
@@ -720,26 +816,69 @@
         <div class="content-panel" id="panel-portfolio">
           <div class="panel-body">
             <h3>Portfolio</h3>
-            <div class="portfolio-empty">
-              <p class="portfolio-label">Coming Soon</p>
-              <p class="portfolio-sub">Case studies and work samples will be added here shortly.</p>
+            <div class="portfolio-grid">
+
+              <!-- Card 1: placeholder app -->
+              <div class="portfolio-card">
+                <div class="iphone-wrap" data-iframe="">
+                  <div class="iphone-screen">
+                    <div class="iphone-screen-placeholder">
+                      <span>App screenshot</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="portfolio-card-info">
+                  <p class="portfolio-card-title">Project name</p>
+                  <p class="portfolio-card-desc">A brief description of this project and what was achieved.</p>
+                </div>
+              </div>
+
+              <!-- Card 2: empty slot -->
+              <div class="portfolio-card portfolio-card-empty">
+                <div class="iphone-wrap">
+                  <div class="iphone-screen">
+                    <div class="iphone-screen-placeholder"></div>
+                  </div>
+                </div>
+                <div class="portfolio-card-info">
+                  <p class="portfolio-card-title">Coming soon</p>
+                  <p class="portfolio-card-desc"></p>
+                </div>
+              </div>
+
+              <!-- Card 3: empty slot -->
+              <div class="portfolio-card portfolio-card-empty">
+                <div class="iphone-wrap">
+                  <div class="iphone-screen">
+                    <div class="iphone-screen-placeholder"></div>
+                  </div>
+                </div>
+                <div class="portfolio-card-info">
+                  <p class="portfolio-card-title">Coming soon</p>
+                  <p class="portfolio-card-desc"></p>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
 
         <div class="content-panel" id="panel-contact">
           <div class="panel-body">
-            <h3>Get In Touch</h3>
             <div class="contact-layout">
               <div class="contact-info">
+                
                 <div class="profile-header">
                   <img src="images/dt-headshot.png" alt="Daniel Thompson" class="profile-photo">
-                  <p class="profile-blurb">Hi, I'm Daniel — a digital specialist with over a decade at the sharp end of ecommerce and performance marketing. I work with brands to solve real commercial problems through digital technology.</p>
-                </div>
-                <div class="direct-contact-row">
-                  <a href="mailto:hello@danielthompson.digital" class="contact-item"><i class="fas fa-envelope"></i> hello@danielthompson.digital</a>
-                  <a href="https://wa.me/23057791771" target="_blank" class="contact-item"><i class="fab fa-whatsapp"></i> +230 5779 1771</a>
-                  <a href="https://linkedin.com/in/danielthompsonmarketer" target="_blank" class="contact-item"><i class="fab fa-linkedin-in"></i> LinkedIn</a>
+                  <div class="profile-header-text">
+                    <h3 style="margin-bottom:0px;">Get In Touch</h3>
+                    <p class="profile-blurb">Hi, I'm Daniel — a digital specialist with over a decade at the sharp end of ecommerce and performance marketing. Currently residing in Floreal, Mauritus, I work with brands to solve real commercial problems through digital technology.</p>
+                    <div class="direct-contact-row">
+                      <a href="mailto:hello@danielthompson.digital" class="contact-item"><i class="fas fa-envelope"></i> hello@danielthompson.digital</a>
+                      <a href="https://wa.me/23057791771" target="_blank" class="contact-item"><i class="fab fa-whatsapp"></i> +230 5779 1771</a>
+                      <a href="https://linkedin.com/in/danielthompsonmarketer" target="_blank" class="contact-item"><i class="fab fa-linkedin-in"></i> LinkedIn</a>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="contact-form-wrap">
