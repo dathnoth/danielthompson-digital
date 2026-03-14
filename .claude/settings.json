@@ -16,10 +16,19 @@
       "Bash(git add index.html images/dt-headshot2.png)",
       "Bash(git add index.html)",
       "Bash(git push)",
-      "Bash(open /Users/danielthompson/Desktop/WORK/danielthompson.digital/og-preview.html)"
+      "Bash(open /Users/danielthompson/Desktop/WORK/danielthompson.digital/og-preview.html)",
+      "WebSearch",
+      "WebFetch(domain:rss.feedspot.com)",
+      "Bash(mkdir -p /Users/danielthompson/Desktop/WORK/mauritius-news/icons)",
+      "Read(//Users/danielthompson/Desktop/WORK/**)",
+      "Bash(curl -s \"https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Flexpress.mu%2Frss.xml\")",
+      "Bash(curl -s \"https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fionnews.mu%2Ffeed%2F\")",
+      "Bash(curl -s \"https://api.mymemory.translated.net/get?q=Vol%20de%20plus%20de%20Rs%201%20million%20de%20barres%20en%20cuivre%20du%20CEB&langpair=fr%7Cen\")",
+      "Bash(python3 -c \":*)"
     ],
     "additionalDirectories": [
-      "/Users/danielthompson/Desktop/WORK/keyzee"
+      "/Users/danielthompson/Desktop/WORK/keyzee",
+      "/Users/danielthompson/Desktop/WORK/mauritius-news"
     ]
   }
 }
