@@ -424,7 +424,7 @@ body[data-tab="today"] .period-sentinel, body[data-tab="tools"] .period-sentinel
   position: fixed; z-index: 40; left: 50%; transform: translateX(-50%);
   bottom: calc(var(--safe-bottom) + 12px);
   width: min(calc(100% - 28px), 460px); height: 66px; padding: 0 6px;
-  display: grid; grid-template-columns: repeat(5, 1fr); align-items: center;
+  display: grid; grid-template-columns: repeat(4, 1fr); align-items: center;
   border-radius: 26px;
   background: linear-gradient(155deg, rgb(255 255 255 / 0.82), rgb(255 255 255 / 0.62));
 }

@@ -31,6 +31,8 @@ const WEEKDAYS_LONG = ["Mondays", "Tuesdays", "Wednesdays", "Thursdays", "Friday
 
 // `animate` is true when charts should play their entrance animation (first load and
 // when the data shown changes) and false for plain re-draws such as after a resize.
+// Demo only: every product shows the same quantity sold
+const DEMO_SOLD = "11";
 const state = { ds: null, range: null, preset: "30", productTotals: null, bestBy: "quantity", slowBy: "quantity", unsoldKnown: null, hoursKind: "weekday", animate: true, products: [], productBy: "quantity", productView: "combined" };
 const productHistories = new Map(); // product name → loadProductHistory result
 const productTotalsCache = new Map(); // "from|to" → loadProductTotals result
@@ -648,14 +650,13 @@ function renderPeriodLabel() {
 }
 
 // ---------- Tabs ----------
-// Today, Sales, Products, Busy and Tools, switched from the bar at the bottom. The tab is
+// Today, Sales, Products and Busy, switched from the bar at the bottom. The tab is
 // in the address (#sales), so the back button and reloading keep it.
 const TABS = {
   today: { title: "Today", sub: "" },
   sales: { title: "Sales", sub: "Totals, trends and payments" },
   products: { title: "Products", sub: "What's selling and what isn't" },
   busy: { title: "Busy times", sub: "When customers come in" },
-  tools: { title: "Shop tools", sub: "Shop PC, reports, uploads and settings" },
 };
 let currentTab = "today";
 // Charts measure their box when drawn, and a hidden tab has none: each tab's charts are
@@ -974,7 +975,7 @@ async function renderTodayBest() {
     label: p.name,
     sublabel: [p.category, money.format(p.revenue)].filter(Boolean).join(" · "),
     value: p.quantity,
-    display: `${whole.format(p.quantity)} sold`,
+    display: `${DEMO_SOLD} sold`,
   })), { ranked: true, animate: currentTab === "today", onSelect: $("product-card").hidden ? null : (item) => openProduct(item.name) });
 }
 
@@ -1117,7 +1118,7 @@ function renderProductsFeature() {
   const [first, second] = top;
   $("products-feature-label").textContent = `Top seller · ${totals.fixedPeriod ? "export period" : (PRESET_LABELS[state.preset] ?? rangeText(state.range))}`;
   $("products-top").textContent = first.name;
-  $("products-top-detail").textContent = `${whole.format(first.quantity)} sold · ${money.format(first.revenue)}`;
+  $("products-top-detail").textContent = `${DEMO_SOLD} sold · ${money.format(first.revenue)}`;
   const category = M.salesByCategory(totals, 1)[0];
   const unsold = state.unsoldKnown ? M.unsoldProducts(totals, state.unsoldKnown.items).length : null;
   const stats = [
@@ -1252,7 +1253,7 @@ function setupProductSearch() {
       name.textContent = p.name;
       const detail = document.createElement("span");
       detail.className = "suggestion-detail";
-      detail.textContent = [p.category, p.quantity ? `${whole.format(p.quantity)} sold` : null].filter(Boolean).join(" · ");
+      detail.textContent = [p.category, p.quantity ? `${DEMO_SOLD} sold` : null].filter(Boolean).join(" · ");
       li.append(name, detail);
       li.addEventListener("click", () => choose(p.name));
       return li;
@@ -1508,11 +1509,11 @@ function renderBestSellers() {
     label: p.name,
     sublabel: [
       p.category,
-      state.bestBy === "quantity" ? money.format(p.revenue) : `${whole.format(p.quantity)} sold`,
+      state.bestBy === "quantity" ? money.format(p.revenue) : `${DEMO_SOLD} sold`,
       p.price ? `${money.format(p.price)} each` : null,
     ].filter(Boolean).join(" · "),
     value: state.bestBy === "quantity" ? p.quantity : p.revenue,
-    display: state.bestBy === "quantity" ? `${whole.format(p.quantity)} sold` : money.format(p.revenue),
+    display: state.bestBy === "quantity" ? `${DEMO_SOLD} sold` : money.format(p.revenue),
   })), { ranked: true, animate: state.animate, onSelect: canOpen ? (item) => openProduct(item.name) : null });
 }
 
@@ -1536,11 +1537,11 @@ function renderSlowSellers() {
     label: p.name,
     sublabel: [
       p.category,
-      byQuantity ? money.format(p.revenue) : `${whole.format(p.quantity)} sold`,
+      byQuantity ? money.format(p.revenue) : `${DEMO_SOLD} sold`,
       p.price ? `${money.format(p.price)} each` : null,
     ].filter(Boolean).join(" · "),
     value: byQuantity ? p.quantity : p.revenue,
-    display: byQuantity ? `${whole.format(p.quantity)} sold` : money.format(p.revenue),
+    display: byQuantity ? `${DEMO_SOLD} sold` : money.format(p.revenue),
   })), {
     animate: state.animate,
     onSelect: canOpen ? (item) => openProduct(item.name) : null,
