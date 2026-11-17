@@ -280,10 +280,12 @@
   @media (max-width: 960px) {
     .grid { grid-template-columns: repeat(2, 1fr); }
     .t-hero, .t-exp, .t-work, .t-contact, .t-now { grid-column: span 2; }
-    .t-photo { grid-column: span 2; grid-row: span 1; height: auto; display: grid; grid-template-columns: 132px 1fr; align-items: center; }
-    .t-photo img { height: 160px; object-position: 50% 20%; }
+    .t-photo { grid-column: span 2; grid-row: span 1; height: auto; display: grid; grid-template-columns: 76px 1fr; align-items: center; gap: 4px; padding: 16px 18px; }
+    .t-photo img { width: 64px; height: 64px; border-radius: 50%; object-position: 50% 22%; box-shadow: 0 0 0 2px #7da87a; }
     .t-photo:hover img { transform: none; }
-    .photo-caption { display: flex; flex-direction: column; gap: 4px; padding: 18px 20px; font-size: 13px; color: var(--muted); line-height: 1.4; }
+    .photo-caption { display: flex; flex-direction: column; gap: 4px; padding: 0; font-size: 13px; color: var(--muted); line-height: 1.4; }
+    .photo-caption .loc { display: inline-flex; align-items: center; gap: 6px; }
+    .photo-caption .flag { width: 18px; height: 12px; border-radius: 2px; box-shadow: 0 0 0 1px rgba(255,255,255,.15); flex-shrink: 0; }
     .photo-caption strong { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
     .t-services { grid-column: span 2; }
     .hero-title { font-size: 26px; }
@@ -354,7 +356,7 @@
     <!-- PHOTO -->
     <section class="tile t-photo">
       <img src="images/dt-headshot2.png" alt="Daniel Thompson">
-      <div class="photo-caption" aria-hidden="true"><strong>Daniel Thompson</strong><span>Floreal, Mauritius 🇲🇺</span><span>15 years in ecommerce &amp; digital</span></div>
+      <div class="photo-caption"><strong>Daniel Thompson</strong><span>Over 15 years in online retail and digital</span><span class="loc">Located in Floreal, Mauritius <svg class="flag" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="4" fill="#EA2839"/><rect y="4" width="24" height="4" fill="#1A206D"/><rect y="8" width="24" height="4" fill="#FFD500"/><rect y="12" width="24" height="4" fill="#00A551"/></svg></span></div>
     </section>
 
     <!-- NOW -->
