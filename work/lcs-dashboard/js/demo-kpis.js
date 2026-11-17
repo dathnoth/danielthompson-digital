@@ -1,14 +1,14 @@
-// Demo only: every number in a Today-tab KPI shows one repeated digit (1s, 2s, 3s), and
-// the three headline values are all fixed at 11,111,
+// Demo only: every number in a Today-tab KPI shows 1s (amounts read 11), and
+// the three headline values are fixed at 11,
 // so the case study shows the layout without anything that reads like real figures.
 // Runs over whatever dashboard.js writes, including the count-up animation.
 (() => {
   const KPIS = [
     ["1", ["kpi-today", "kpi-today-change", "kpi-today-progress", "kpi-today-usual", "kpi-today-stats"]],
-    ["2", ["kpi-yesterday", "kpi-yesterday-change", "kpi-yesterday-detail", "kpi-yesterday-visitors"]],
-    ["3", ["kpi-month", "kpi-month-change", "kpi-month-detail"]],
+    ["1", ["kpi-yesterday", "kpi-yesterday-change", "kpi-yesterday-detail", "kpi-yesterday-visitors"]],
+    ["1", ["kpi-month", "kpi-month-change", "kpi-month-detail"]],
   ];
-  const HEADLINES = { "kpi-today": "11,111", "kpi-yesterday": "11,111", "kpi-month": "11,111" };
+  const HEADLINES = { "kpi-today": "11", "kpi-yesterday": "11", "kpi-month": "11" };
   const swapDigits = (text, digit) => text.replace(/\d/g, digit);
 
   function apply(node, digit) {

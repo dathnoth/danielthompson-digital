@@ -16,7 +16,14 @@ const setCurrency = (currency) => {
   currencySymbol = money.formatToParts(0).find((p) => p.type === "currency")?.value ?? "";
   moneyCents = new Intl.NumberFormat(CONFIG.locale, { ...base, minimumFractionDigits: 2, maximumFractionDigits: 2 });
   moneyShort = new Intl.NumberFormat(CONFIG.locale, { ...base, notation: "compact", maximumFractionDigits: 1 });
+  // Demo only: every Rs amount reads "Rs 11" (chart axis ticks keep their real scale)
+  money = demoMoney(money);
+  moneyCents = demoMoney(moneyCents);
 };
+// Demo only: placeholder figures so nothing reads like real shop numbers
+const DEMO_FIGURE = "11";
+const demoMoney = (fmt) => ({ format: () => `${currencySymbol} ${DEMO_FIGURE}`, formatToParts: (n) => fmt.formatToParts(n) });
+const qty = { format: () => DEMO_FIGURE };
 const whole = new Intl.NumberFormat(CONFIG.locale);
 const oneDecimal = new Intl.NumberFormat(CONFIG.locale, { maximumFractionDigits: 1 });
 const pct = new Intl.NumberFormat(CONFIG.locale, { style: "percent", maximumFractionDigits: 0 });
@@ -31,8 +38,6 @@ const WEEKDAYS_LONG = ["Mondays", "Tuesdays", "Wednesdays", "Thursdays", "Friday
 
 // `animate` is true when charts should play their entrance animation (first load and
 // when the data shown changes) and false for plain re-draws such as after a resize.
-// Demo only: every product shows the same quantity sold
-const DEMO_SOLD = "11";
 const state = { ds: null, range: null, preset: "30", productTotals: null, bestBy: "quantity", slowBy: "quantity", unsoldKnown: null, hoursKind: "weekday", animate: true, products: [], productBy: "quantity", productView: "combined" };
 const productHistories = new Map(); // product name → loadProductHistory result
 const productTotalsCache = new Map(); // "from|to" → loadProductTotals result
@@ -747,7 +752,7 @@ function rangeText(range) {
 }
 
 function ordersText(s) {
-  return s.orders != null ? `${whole.format(s.orders)} orders · avg ${moneyCents.format(s.avgOrder)}` : null;
+  return s.orders != null ? `${qty.format(s.orders)} orders · avg ${moneyCents.format(s.avgOrder)}` : null;
 }
 
 // "212 visitors · 38% conversion" under a headline number, from the door counter. Hidden
@@ -757,7 +762,7 @@ function showVisitors(el, range, soFar = false) {
   el.hidden = !v;
   if (!v) return;
   el.textContent = [
-    `~${whole.format(v.visitors)} visitor${v.visitors === 1 ? "" : "s"}${soFar ? " so far" : ""}`,
+    `~${qty.format(v.visitors)} visitor${v.visitors === 1 ? "" : "s"}${soFar ? " so far" : ""}`,
     v.conversion != null ? `${pct.format(v.conversion)} conversion` : null,
   ].filter(Boolean).join(" · ");
   el.title = v.conversion != null ? `Conversion: ${state.ds.lines ? "orders" : "tickets"} ÷ visitors` : "";
@@ -785,7 +790,7 @@ function renderHeadline() {
   setTodayTitle(h);
   $("kpi-today-cur").textContent = currencySymbol;
   $("kpi-today").setAttribute("aria-label", money.format(h.todayNow.sales));
-  countUp($("kpi-today"), h.todayNow.sales, (n) => whole.format(Math.round(n)));
+  countUp($("kpi-today"), h.todayNow.sales, (n) => qty.format(Math.round(n)));
 
   const usualName = `a usual ${day}`;
   const leftOutText = h.typicalLeftOut.length ? `Leaving out ${listText(h.typicalLeftOut.map(shortDate))}: unusual ${h.typicalLeftOut.length === 1 ? "day" : "days"} (a holiday or a one-off)` : "";
@@ -828,9 +833,9 @@ function renderHeadline() {
   const ticketWord = h.todayNow.orders != null ? "orders" : "tickets";
   const v = M.visitorSummary(ds, { from: h.today, to: M.addDays(h.today, 1) });
   const stats = [
-    tickets != null && [whole.format(tickets), h.todayNow.orders != null ? "orders" : "tickets (about)"],
+    tickets != null && [qty.format(tickets), h.todayNow.orders != null ? "orders" : "tickets (about)"],
     tickets && [money.format(h.todayNow.sales / tickets), `avg ${ticketWord === "orders" ? "order" : "ticket"}`],
-    v && [`${whole.format(v.visitors)}`, h.todayFinished || shopClosed(h.today) ? "visitors" : "visitors so far"],
+    v && [`${qty.format(v.visitors)}`, h.todayFinished || shopClosed(h.today) ? "visitors" : "visitors so far"],
     v?.conversion != null && !tickets && [pct.format(v.conversion), "conversion"],
   ].filter(Boolean).slice(0, 3);
   $("kpi-today-stats").replaceChildren(...stats.map(([value, label]) => {
@@ -873,7 +878,7 @@ function renderHeadline() {
   }
   $("kpi-month-detail").textContent = h.monthProjection != null
     ? `On track for ${money.format(h.monthProjection)}`
-    : h.month.orders != null ? `${whole.format(h.month.orders)} orders` : "";
+    : h.month.orders != null ? `${qty.format(h.month.orders)} orders` : "";
 
   renderTodayHours();
   if (currentTab === "today") drawn.add("today");
@@ -940,7 +945,7 @@ function renderTodayHours() {
   const h = state.headline;
   const day = weekday(h.today);
   const sales = data.kind === "sales";
-  const fmt = (v) => (sales ? money.format(v) : whole.format(Math.round(v)));
+  const fmt = (v) => (sales ? money.format(v) : qty.format(Math.round(v)));
   $("today-hours-title").textContent = `${sales ? "Today" : "Visitors today"} vs a usual ${day}`;
   $("today-hours-sub").textContent = data.usualDays
     ? `${sales ? "Sales" : "People coming in"} each hour. The line is the average of the last ${data.usualDays === 1 ? "" : `${data.usualDays} `}normal ${day}${data.usualDays === 1 ? "" : "s"}${h.typicalLeftOut.length ? ` (leaving out ${listText(h.typicalLeftOut.map(shortDate))})` : ""}.`
@@ -975,7 +980,7 @@ async function renderTodayBest() {
     label: p.name,
     sublabel: [p.category, money.format(p.revenue)].filter(Boolean).join(" · "),
     value: p.quantity,
-    display: `${DEMO_SOLD} sold`,
+    display: `${DEMO_FIGURE} sold`,
   })), { ranked: true, animate: currentTab === "today", onSelect: $("product-card").hidden ? null : (item) => openProduct(item.name) });
 }
 
@@ -1069,7 +1074,7 @@ function renderSummary() {
   $("sales-feature-label").textContent = PRESET_LABELS[state.preset] ?? rangeText(state.range);
   $("sales-cur").textContent = currencySymbol;
   $("sales-total").setAttribute("aria-label", money.format(s.sales));
-  countUp($("sales-total"), s.sales, (n) => whole.format(Math.round(n)), { animate: state.animate });
+  countUp($("sales-total"), s.sales, (n) => qty.format(Math.round(n)), { animate: state.animate });
 
   // Against the same number of days just before, complete days only (a half-finished
   // today would make any period look worse than it is)
@@ -1091,13 +1096,13 @@ function renderSummary() {
   else $("sales-spark").replaceChildren();
 
   const items = [
-    s.orders != null && ["Orders", whole.format(s.orders)],
+    s.orders != null && ["Orders", qty.format(s.orders)],
     s.avgOrder != null && ["Average order", moneyCents.format(s.avgOrder)],
     s.exclVat != null && ["Excl. VAT", money.format(s.exclVat)],
     s.vat != null && ["VAT", money.format(s.vat)],
     s.discount != null && ["Discounts", money.format(s.discount)],
     s.refund != null && [ds.lines ? "Refunds" : "Refunds (credit notes)", money.format(s.refund)],
-    v && [v.days < periodDays ? `Visitors (${v.days} of ${periodDays} days)` : "Visitors", whole.format(v.visitors)],
+    v && [v.days < periodDays ? `Visitors (${v.days} of ${periodDays} days)` : "Visitors", qty.format(v.visitors)],
     v?.conversion != null && [`Conversion (${ds.lines ? "orders" : "tickets"} ÷ visitors)`, pct.format(v.conversion)],
   ].filter(Boolean);
   if (s.days < periodDays) items.push(["Days with data", `${s.days} of ${periodDays}`]);
@@ -1118,7 +1123,7 @@ function renderProductsFeature() {
   const [first, second] = top;
   $("products-feature-label").textContent = `Top seller · ${totals.fixedPeriod ? "export period" : (PRESET_LABELS[state.preset] ?? rangeText(state.range))}`;
   $("products-top").textContent = first.name;
-  $("products-top-detail").textContent = `${DEMO_SOLD} sold · ${money.format(first.revenue)}`;
+  $("products-top-detail").textContent = `${DEMO_FIGURE} sold · ${money.format(first.revenue)}`;
   const category = M.salesByCategory(totals, 1)[0];
   const unsold = state.unsoldKnown ? M.unsoldProducts(totals, state.unsoldKnown.items).length : null;
   const stats = [
@@ -1153,7 +1158,7 @@ function renderBusyFeature() {
   const stats = [
     days.length > 1 && ["Quietest day", WEEKDAYS_LONG[worst.weekday]],
     peak && [hours.length ? "Busiest hour" : "Most visitors", `${hourLabel(peak.hour)}`],
-    v && ["Visitors", whole.format(v.visitors)],
+    v && ["Visitors", qty.format(v.visitors)],
   ].filter(Boolean);
   $("busy-stats").replaceChildren(...stats.map(([label, value]) => {
     const div = el("div");
@@ -1253,7 +1258,7 @@ function setupProductSearch() {
       name.textContent = p.name;
       const detail = document.createElement("span");
       detail.className = "suggestion-detail";
-      detail.textContent = [p.category, p.quantity ? `${DEMO_SOLD} sold` : null].filter(Boolean).join(" · ");
+      detail.textContent = [p.category, p.quantity ? `${DEMO_FIGURE} sold` : null].filter(Boolean).join(" · ");
       li.append(name, detail);
       li.addEventListener("click", () => choose(p.name));
       return li;
@@ -1382,7 +1387,7 @@ function renderProduct() {
   const histories = chosen.map((name) => productHistories.get(name));
   if (!histories[0].covered.size) return clear("No day-by-day product figures yet. They're added each time new figures are fetched from CuisineIQ.");
   const byQuantity = state.productBy === "quantity";
-  const fmt = (v) => (byQuantity ? `${whole.format(v)} sold` : money.format(v));
+  const fmt = (v) => (byQuantity ? `${qty.format(v)} sold` : money.format(v));
   const fmtAvg = (v) => (byQuantity ? oneDecimal.format(v) : money.format(v));
   // Every product has figures for the same days, so their points line up
   const series = histories.map((h) => M.productDaily(state.ds, h, state.range, state.productBy));
@@ -1466,7 +1471,7 @@ function renderProduct() {
   fillTable($("product-table"), headers, points.map((p, i) => [
     dayText(p),
     ...(chosen.length === 1
-      ? [p.noData ? "–" : whole.format(byDay(histories[0], p)?.quantity ?? 0), p.noData ? "–" : money.format(byDay(histories[0], p)?.revenue ?? 0)]
+      ? [p.noData ? "–" : qty.format(byDay(histories[0], p)?.quantity ?? 0), p.noData ? "–" : money.format(byDay(histories[0], p)?.revenue ?? 0)]
       : [...series.map((pts) => (pts[i].noData ? "–" : fmt(pts[i].value))), p.noData ? "–" : fmt(series.reduce((a, pts) => a + pts[i].value, 0))]),
   ]).reverse());
 }
@@ -1509,11 +1514,11 @@ function renderBestSellers() {
     label: p.name,
     sublabel: [
       p.category,
-      state.bestBy === "quantity" ? money.format(p.revenue) : `${DEMO_SOLD} sold`,
+      state.bestBy === "quantity" ? money.format(p.revenue) : `${DEMO_FIGURE} sold`,
       p.price ? `${money.format(p.price)} each` : null,
     ].filter(Boolean).join(" · "),
     value: state.bestBy === "quantity" ? p.quantity : p.revenue,
-    display: state.bestBy === "quantity" ? `${DEMO_SOLD} sold` : money.format(p.revenue),
+    display: state.bestBy === "quantity" ? `${DEMO_FIGURE} sold` : money.format(p.revenue),
   })), { ranked: true, animate: state.animate, onSelect: canOpen ? (item) => openProduct(item.name) : null });
 }
 
@@ -1537,11 +1542,11 @@ function renderSlowSellers() {
     label: p.name,
     sublabel: [
       p.category,
-      byQuantity ? money.format(p.revenue) : `${DEMO_SOLD} sold`,
+      byQuantity ? money.format(p.revenue) : `${DEMO_FIGURE} sold`,
       p.price ? `${money.format(p.price)} each` : null,
     ].filter(Boolean).join(" · "),
     value: byQuantity ? p.quantity : p.revenue,
-    display: byQuantity ? `${DEMO_SOLD} sold` : money.format(p.revenue),
+    display: byQuantity ? `${DEMO_FIGURE} sold` : money.format(p.revenue),
   })), {
     animate: state.animate,
     onSelect: canOpen ? (item) => openProduct(item.name) : null,
@@ -1651,7 +1656,7 @@ function renderVisitors() {
     ].filter(Boolean),
   });
   const peak = hours.reduce((a, b) => (b.value > a.value ? b : a));
-  $("visitors-note").textContent = `Busiest: ${hourLabel(peak.hour)} – ${hourLabel(peak.hour + 1)}, ${average ? "about " : ""}${whole.format(Math.round(peak.value))} visitors.`;
+  $("visitors-note").textContent = `Busiest: ${hourLabel(peak.hour)} – ${hourLabel(peak.hour + 1)}, ${average ? "about " : ""}${qty.format(Math.round(peak.value))} visitors.`;
 }
 
 function renderPayments() {
@@ -1667,7 +1672,7 @@ function renderPayments() {
   donut($("payments"), parts.map((p) => ({ label: p.name, value: p.revenue, share: p.share, display: money.format(p.revenue) })), {
     animate: state.animate,
     ariaLabel: "Share of sales by payment type",
-    centerValue: new Intl.NumberFormat(CONFIG.locale, { style: "currency", currency: state.ds.currency, currencyDisplay: "narrowSymbol", notation: "compact", maximumFractionDigits: 2 }).format(total),
+    centerValue: new Intl.NumberFormat(CONFIG.locale, { style: "currency", currency: state.ds.currency, currencyDisplay: "narrowSymbol", notation: "compact", maximumFractionDigits: 2 }).format(total).replace(/[\d.,]+[A-Za-z]*/, DEMO_FIGURE),
     centerLabel: "total",
     formatShare: (s) => pct.format(s),
   });
