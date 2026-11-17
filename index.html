@@ -76,12 +76,18 @@
     position: sticky; top: 16px; z-index: 50;
     max-width: 1180px; margin: 16px auto 0; padding: 0 20px;
   }
+  /* Borderless top bar: sits on the page; a soft frosted backdrop fades in once you scroll */
   .nav-inner {
+    position: relative; isolation: isolate;
     display: flex; align-items: center; justify-content: space-between;
-    background: rgba(11,23,16,0.7); backdrop-filter: blur(16px);
-    border: 1px solid var(--line); border-radius: var(--radius);
-    padding: 8px 8px 8px 20px;
+    padding: 8px 0 8px 2px;
   }
+  .nav-inner::before {
+    content: ''; position: absolute; inset: -4px -14px; z-index: -1; border-radius: var(--radius);
+    background: rgba(5,13,8,0.72); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    opacity: 0; transition: opacity .3s ease;
+  }
+  nav.scrolled .nav-inner::before { opacity: 1; }
   .logo { font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.02em; }
   .logo b { color: var(--gold); font-weight: 500; }
   .brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
@@ -475,6 +481,11 @@
 <footer><span>© 2026 danielthompson.digital</span><span>Floreal, Mauritius 🇲🇺 · +230 5779 1771</span></footer>
 
 <script>
+  // Top bar: frosted backdrop appears once the page scrolls
+  const navEl = document.querySelector('nav');
+  const onScroll = () => navEl.classList.toggle('scrolled', window.scrollY > 8);
+  window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
   // Experience: keep only one entry open so the tile stays compact
   const dets = document.querySelectorAll('.t-exp details');
   dets.forEach(d => d.addEventListener('toggle', () => { if (d.open) dets.forEach(o => { if (o !== d) o.open = false; }); }));
