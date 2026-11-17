@@ -41,7 +41,7 @@ A single-page, static site built as a **bento grid**: tiles for the intro, heads
 The interactive pieces live in the inline `<script>` at the bottom of `index.html`:
 
 - **Experience tile**: native `<details>` accordions; opening one closes the others so the tile stays compact.
-- **Recent work gallery**: `.work` cards with screenshots in `images/work/`. The first card (`.work-feature`) spans both columns. To add a project, copy a card and swap the `background-image`, `href`, title and tag.
+- **Recent work gallery**: a 2×2 grid of `.work` cards. Each has a framed screenshot (`.work-shot`, images in `images/work/`) with the title and tag underneath. To add a project, copy a card and swap the image, `href`, title and tag.
 - **Contact form**: submits to Formspree via `fetch`; on success it swaps in a thank-you message and reports a GA4 `generate_lead` event; on failure it shows an error that points to the email address.
 - **Cursor spotlight + reveal**: tiles glow softly under the cursor and fade in on scroll. Tiles only start hidden when JS is running (`html.js`), and all motion is turned off for `prefers-reduced-motion`.
 
