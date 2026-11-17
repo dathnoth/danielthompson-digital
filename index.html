@@ -340,9 +340,30 @@
     .js .tile { opacity: 1; transform: none; }
     html { scroll-behavior: auto; }
   }
+  /* Moving background layer (behind everything) */
+  .bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+  body { background-image: none !important; }
+  @media (prefers-reduced-motion: reduce) { .bg *, .bg::before { animation: none !important; } }
+  /* Let the movement glow faintly through the tiles */
+  .tile { background-color: rgba(11,23,16,.8); }
+  .t-now { background: linear-gradient(135deg, rgba(16,37,26,.85), rgba(11,23,16,.8) 60%); }
+  .t-contact { background: linear-gradient(120deg, rgba(18,51,34,.88), rgba(11,23,16,.8) 70%); }
+  @media (min-width: 961px) { .tile { backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); } }
+
+  .bg { background: radial-gradient(70vmax 60vmax at 0% 0%, rgba(30,107,74,.16), transparent 60%); }
+  .bg .dots { position: absolute; inset: 0; background-image: radial-gradient(rgba(168,191,154,.16) 1px, transparent 1.4px); background-size: 26px 26px; }
+  .bg .glow { position: absolute; width: 70vmax; height: 70vmax; left: 50%; top: 40%; margin: -35vmax 0 0 -35vmax; border-radius: 50%;
+    background: radial-gradient(circle, rgba(125,168,122,.14), transparent 60%); animation: breathe 9s ease-in-out infinite, wander 40s ease-in-out infinite alternate; }
+  .bg .reveal { position: absolute; inset: 0; background-image: radial-gradient(rgba(201,168,76,.55) 1px, transparent 1.5px); background-size: 26px 26px;
+    -webkit-mask-image: radial-gradient(30vmax 30vmax at var(--x,50%) var(--y,40%), #000, transparent 70%); mask-image: radial-gradient(30vmax 30vmax at var(--x,50%) var(--y,40%), #000, transparent 70%);
+    opacity: .5; animation: breatheo 9s ease-in-out infinite; }
+  @keyframes breathe { 0%,100% { transform: scale(.85); opacity: .7; } 50% { transform: scale(1.1); opacity: 1; } }
+  @keyframes breatheo { 0%,100% { opacity: .25; } 50% { opacity: .6; } }
+  @keyframes wander { to { left: 30%; top: 65%; } }
 </style>
 </head>
 <body>
+<div class="bg" aria-hidden="true"><span class="dots"></span><span class="glow"></span><span class="reveal"></span></div>
 
 <nav>
   <div class="nav-inner">
@@ -501,6 +522,13 @@
 <footer><span>© 2026 danielthompson.digital</span><span><a href="mailto:hello@danielthompson.digital">hello@danielthompson.digital</a><span class="foot-sep"> · </span><span class="nowrap">+230 5779 1771</span></span></footer>
 
 <script>
+  // Background: the gold dot glow drifts toward the pointer (desktop only)
+  if (matchMedia('(pointer: fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const bgEl = document.querySelector('.bg'); let tx = 50, ty = 40, cx = 50, cy = 40;
+    addEventListener('mousemove', e => { tx = e.clientX / innerWidth * 100; ty = e.clientY / innerHeight * 100; }, { passive: true });
+    (function ease() { cx += (tx - cx) * 0.04; cy += (ty - cy) * 0.04; bgEl.style.setProperty('--x', cx + '%'); bgEl.style.setProperty('--y', cy + '%'); requestAnimationFrame(ease); })();
+  }
+
   // Top bar: frosted backdrop appears once the page scrolls
   const navEl = document.querySelector('nav');
   const onScroll = () => navEl.classList.toggle('scrolled', window.scrollY > 8);
