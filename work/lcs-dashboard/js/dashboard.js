@@ -26,7 +26,8 @@ const demoMoney = (fmt) => ({ format: () => `${currencySymbol} ${DEMO_FIGURE}`, 
 const qty = { format: () => DEMO_FIGURE };
 const whole = new Intl.NumberFormat(CONFIG.locale);
 const oneDecimal = new Intl.NumberFormat(CONFIG.locale, { maximumFractionDigits: 1 });
-const pct = new Intl.NumberFormat(CONFIG.locale, { style: "percent", maximumFractionDigits: 0 });
+// Demo only: every percentage reads 11%
+const pct = { format: () => `${DEMO_FIGURE}%` };
 const fmtDate = (d, opts) => d.toLocaleDateString(CONFIG.locale, opts);
 const weekday = (d) => fmtDate(d, { weekday: "long" });
 const shortDate = (d) => fmtDate(d, { day: "numeric", month: "short" });
