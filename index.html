@@ -84,6 +84,8 @@
   }
   .logo { font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.02em; }
   .logo b { color: var(--gold); font-weight: 500; }
+  .brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+  .tagline { font-size: 13px; color: var(--muted); padding-left: 14px; border-left: 1px solid rgba(255,255,255,0.12); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .nav-links { display: flex; gap: 4px; }
   .nav-links a {
     font-size: 13px; color: var(--muted); padding: 9px 16px; border-radius: var(--radius);
@@ -231,8 +233,10 @@
     .hero-title { font-size: 26px; }
     .hero-head { flex-direction: column; align-items: flex-start; gap: 22px; }
     .hero-mark { height: 72px; }
-    .nav-links a:not(.cta) { display: none; }
     .t-contact { grid-template-columns: 1fr; padding: 28px; }
+  }
+  @media (max-width: 720px) {
+    .tagline { display: none; }
   }
   @media (max-width: 520px) {
     .t-services { grid-column: span 2; padding: 20px; }
@@ -257,11 +261,11 @@
 
 <nav>
   <div class="nav-inner">
-    <a href="#" class="logo">danielthompson<b>.digital</b></a>
+    <div class="brand">
+      <a href="#" class="logo">danielthompson<b>.digital</b></a>
+      <span class="tagline">Ecommerce growth &amp; AI automation specialist</span>
+    </div>
     <div class="nav-links">
-      <a href="#experience">Experience</a>
-      <a href="#work">Work</a>
-      <a href="#services">Services</a>
       <a href="#contact" class="cta">Let's talk →</a>
     </div>
   </div>
@@ -337,7 +341,7 @@
             <div></div>
           </div>
         </div>
-        <details open>
+        <details>
           <summary>
             <img class="exp-logo" src="images/global-marketplace.jpeg" alt="">
             <div><div class="exp-co">Global Marketplace</div><div class="exp-role">Head of Marketing · Click Frenzy, Power Retail, GrabOne</div></div>
