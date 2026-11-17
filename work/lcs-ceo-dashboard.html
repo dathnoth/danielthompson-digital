@@ -15,7 +15,7 @@
     /* Le Coffee Shop brand */
     --moss: #2C4A2E; --moss-dark: #1A2E1B; --linen: #F0F4EB; --linen-dark: #DDE6D5; --sage: #7B9E7F;
     --surface: #FFFFFF;
-    --ink: #1A2E1B; --ink-2: #4B5E4D; --ink-3: #7A8A7C;
+    --ink: #1A2E1B; --ink-2: #4B5E4D; --ink-3: #5F6F61;
     --grid: #E7ECE3; --axis: #C9D3C4;
     /* Validated chart palette (dataviz validator: all checks pass on #FFFFFF) */
     --s-current: #3F7F4A;  /* this period */
@@ -39,7 +39,7 @@
   .seg button { border: none; background: none; font: inherit; font-size: 13px; font-weight: 500; color: var(--ink-2); padding: 7px 14px; border-radius: 12px; cursor: pointer; }
   .seg button[aria-pressed="true"] { background: var(--moss); color: #fff; }
   .seg button:focus-visible { outline: 2px solid var(--s-current); outline-offset: 2px; }
-  .sample { font-size: 12px; font-weight: 500; color: var(--warn); background: #FBF3E4; border: 1px solid #EED9B0; padding: 6px 10px; border-radius: var(--radius); }
+  .sample { font-size: 12px; font-weight: 500; color: #8A5600; background: #FBF3E4; border: 1px solid #EED9B0; padding: 6px 10px; border-radius: var(--radius); }
 
   /* Cards */
   .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
@@ -94,6 +94,7 @@
   .heat-legend { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--ink-3); }
   .heat-legend .ramp { width: 120px; height: 8px; border-radius: 4px; }
 
+  .tbl-toggle:focus-visible { outline: 2px solid var(--s-current); outline-offset: 2px; }
   .tbl-toggle { font: inherit; font-size: 12px; color: var(--ink-2); background: none; border: 1px solid var(--linen-dark); border-radius: 10px; padding: 4px 10px; cursor: pointer; }
   .data-table { display: none; margin-top: 12px; max-height: 220px; overflow: auto; }
   .data-table.show { display: block; }
@@ -151,9 +152,13 @@
     <section class="card c-heat">
       <div class="card-head">
         <div><h2>Busy hours</h2><div class="sub">Average orders per hour</div></div>
-        <div class="heat-legend">fewer <span class="ramp" id="ramp"></span> more</div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <div class="heat-legend" aria-hidden="true">fewer <span class="ramp" id="ramp"></span> more</div>
+          <button class="tbl-toggle" data-target="heat-table">Table</button>
+        </div>
       </div>
-      <svg class="chart" id="heat" height="320" role="img" aria-label="Heatmap of orders by day and hour"></svg>
+      <svg class="chart" id="heat" height="320" role="img" aria-label="Heatmap of average orders by day and hour. Use the Table button for the values."></svg>
+      <div class="data-table" id="heat-table"></div>
     </section>
 
     <section class="card c-top">
@@ -314,6 +319,7 @@ function renderHeat(days) {
     });
   });
   hours.forEach((h, hi) => { if (hi % 2 === 0) el('text', { x: m.l + hi * cw + cw / 2, y: HH - 6, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--ink-3)' }, svg).textContent = (h > 12 ? h - 12 : h) + (h >= 12 ? 'pm' : 'am'); });
+  document.getElementById('heat-table').innerHTML = `<table><thead><tr><th>Day</th>${hours.map(h => `<th class="num">${(h > 12 ? h - 12 : h) + (h >= 12 ? 'pm' : 'am')}</th>`).join('')}</tr></thead><tbody>${data.map((row, di) => `<tr><td>${DOW[di]}</td>${row.map(v => `<td class="num">${v}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
   document.getElementById('ramp').style.background = `linear-gradient(90deg, ${RAMP.join(',')})`;
 }
 
@@ -340,9 +346,13 @@ document.querySelectorAll('#range button').forEach(b => b.addEventListener('clic
   document.querySelectorAll('#range button').forEach(o => o.setAttribute('aria-pressed', o === b));
   days = +b.dataset.days; render();
 }));
-document.querySelectorAll('.tbl-toggle').forEach(b => b.addEventListener('click', () => {
-  const t = document.getElementById(b.dataset.target); t.classList.toggle('show'); b.textContent = t.classList.contains('show') ? 'Chart only' : 'Table';
-}));
+document.querySelectorAll('.tbl-toggle').forEach(b => {
+  b.setAttribute('aria-expanded', 'false'); b.setAttribute('aria-controls', b.dataset.target);
+  b.addEventListener('click', () => {
+    const t = document.getElementById(b.dataset.target), open = t.classList.toggle('show');
+    b.textContent = open ? 'Hide table' : 'Table'; b.setAttribute('aria-expanded', String(open));
+  });
+});
 let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(render, 150); });
 render();
 </script>
