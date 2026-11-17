@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b170d" />
+  <title>Le Coffee Shop · Sales</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+  <meta name="robots" content="noindex" />
+  <script>
+    // Portfolio demo: there's no server here. Anything that would call the dashboard's
+    // own API (Ask, recap, sync, notifications, uploads) gets a polite "off in this demo".
+    (function () {
+      var realFetch = window.fetch.bind(window);
+      var off = { error: "This is a demo with sample data, so Ask Claude and other live features are switched off. In the real dashboard, Claude answers questions about the café's sales." };
+      window.fetch = function (input, init) {
+        var url = typeof input === "string" ? input : input.url;
+        if (/(^|\/)api\//.test(url)) {
+          var quiet = /api\/(day-summary|push)/.test(url);
+          return Promise.resolve(new Response(JSON.stringify(quiet ? {} : off), { status: quiet ? 200 : 503, headers: { "Content-Type": "application/json" } }));
+        }
+        return realFetch(input, init);
+      };
+    })();
+  </script>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="icon" type="image/png" href="img/favicon.png" />
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="LC Sales" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+</head>
+<body class="dash sk-on" data-tab="today">
+  <!-- The backdrop: deep moss at the top fading into linen, with soft colour behind the glass -->
+  <div class="backdrop" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <img class="brand-logo" src="img/logo-round.png" alt="" width="40" height="40">
+      <div class="brand-text">
+        <h1 id="shop-name">Le Coffee Shop</h1>
+        <p class="updated"><span class="live-dot" aria-hidden="true"></span><span id="updated">Loading sales…</span></p>
+      </div>
+    </div>
+    <div class="tab-title" id="tab-title-wrap">
+      <h1 id="tab-title"></h1>
+      <p id="tab-sub"></p>
+    </div>
+    <div class="top-actions">
+      <span class="badge" id="source-badge" hidden>Sample data</span>
+      <div class="top-links" id="cloud-links" hidden>
+        <button type="button" class="glass-btn" id="ask-open" aria-label="Ask Claude about the sales" title="Ask Claude about the sales">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9zM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8zM5 2l.6 1.4L7 4l-1.4.6L5 6l-.6-1.4L3 4l1.4-.6z"/></svg>
+        </button>
+        <button type="button" class="glass-btn" id="sync" aria-label="Fetch latest">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <p class="error" id="error" hidden></p>
+    <p class="notice" id="notice" hidden></p>
+
+    <!-- ===================== Today ===================== -->
+    <section class="panel" id="panel-today" data-panel="today" aria-label="Today">
+      <div class="notify-nudge" id="notify-nudge" role="region" aria-label="Notifications" hidden>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        <p id="notify-nudge-text">Get the day's sales on this phone each evening.</p>
+        <button type="button" class="nudge-on" id="notify-nudge-on">Turn on</button>
+        <button type="button" class="notify-nudge-close" id="notify-nudge-close" aria-label="Not now">×</button>
+      </div>
+
+      <section class="glass dark headline" aria-labelledby="kpi-today-title">
+        <div class="hl-label">
+          <span><span class="live-dot" aria-hidden="true"></span><span id="kpi-today-title">Today so far</span></span>
+          <span id="kpi-today-when" class="sk">Mon 16 Nov · 12:00</span>
+        </div>
+        <div class="hl-top">
+          <p class="hl-num"><span class="cur" id="kpi-today-cur" aria-hidden="true"></span><span id="kpi-today" class="sk">00,000</span></p>
+          <p class="hl-chip" id="kpi-today-change" hidden></p>
+        </div>
+        <div class="hl-bar" id="kpi-today-bar" hidden>
+          <div class="hl-track">
+            <div class="hl-fill" id="kpi-today-fill"></div>
+            <div class="hl-tick" id="kpi-today-tick" hidden><span>Usual by now</span></div>
+          </div>
+          <div class="hl-legend"><span id="kpi-today-progress"></span><span id="kpi-today-usual"></span></div>
+          <p class="hl-note" id="kpi-today-note" hidden></p>
+        </div>
+        <div class="hl-stats" id="kpi-today-stats"><div><strong class="sk">000</strong><span class="sk">orders</span></div><div><strong class="sk">000</strong><span class="sk">orders</span></div><div><strong class="sk">000</strong><span class="sk">orders</span></div></div>
+
+        <!-- After the evening notification: how the day went, written by Claude -->
+        <div class="hl-recap" id="day-summary" hidden>
+          <div class="ai-writing" id="ai-writing" role="status" hidden>
+            <p class="ai-writing-head"><span class="ai-orb" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9zM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg></span><span>Claude is writing today's recap<span class="dots" aria-hidden="true"><i>.</i><i>.</i><i>.</i></span></span></p>
+            <span class="ai-line" style="--w: 100%"></span><span class="ai-line" style="--w: 94%"></span><span class="ai-line" style="--w: 58%"></span>
+          </div>
+          <p class="day-summary-trend" id="day-summary-trend" hidden></p>
+          <p class="day-summary-cheer" id="day-summary-cheer" hidden></p>
+          <p class="day-summary-text" id="day-summary-text"></p>
+          <ul class="day-summary-alerts" id="day-summary-alerts" hidden></ul>
+        </div>
+        <footer class="hl-foot" id="hl-foot" hidden>
+          <span class="hl-by" id="day-summary-by"><span class="spark-tile" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9zM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg></span><span id="day-summary-by-text">Ask Claude</span></span>
+          <button type="button" class="hl-ask" id="today-ask">Ask a question</button>
+        </footer>
+      </section>
+
+      <div class="duo">
+        <article class="glass tile">
+          <h2 id="kpi-yesterday-title">Yesterday</h2>
+          <p class="tile-value" id="kpi-yesterday"><span class="sk">Rs 00,000</span></p>
+          <p class="tile-chip" id="kpi-yesterday-change"></p>
+          <div class="tile-spark" id="kpi-yesterday-visual"></div>
+          <p class="tile-detail" id="kpi-yesterday-detail"></p>
+          <p class="tile-detail" id="kpi-yesterday-visitors" hidden></p>
+        </article>
+        <article class="glass tile">
+          <h2 id="kpi-month-title">This month so far</h2>
+          <p class="tile-value" id="kpi-month"><span class="sk">Rs 000,000</span></p>
+          <p class="tile-chip" id="kpi-month-change"></p>
+          <div class="tile-spark" id="kpi-month-visual"></div>
+          <p class="tile-detail" id="kpi-month-detail"></p>
+        </article>
+      </div>
+
+      <section class="card glass" id="today-hours-card" hidden>
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Hour by hour</p>
+            <h2 id="today-hours-title">Today vs a usual day</h2>
+            <p class="muted" id="today-hours-sub"></p>
+          </div>
+        </div>
+        <div class="plot" id="today-hours-chart"></div>
+        <ul class="legend chart-key">
+          <li><span class="key key-bar"></span><span id="today-hours-key">Today</span></li>
+          <li><span class="key key-line"></span><span id="today-hours-key-usual">Usual day</span></li>
+        </ul>
+      </section>
+
+      <section class="card glass" id="today-best-card" hidden>
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Selling best</p>
+            <h2 id="today-best-title">Today so far</h2>
+          </div>
+          <button type="button" class="link-button" id="today-best-more">All products ›</button>
+        </div>
+        <p class="muted card-note" id="today-best-note"></p>
+        <div id="today-best"></div>
+      </section>
+    </section>
+
+    <!-- The period for Sales, Products and Busy: sticks to the top while scrolling -->
+    <div class="period-sentinel" id="period-sentinel" aria-hidden="true"></div>
+    <div class="period-wrap" id="period-wrap">
+      <div class="pseg" role="group" aria-label="Time period" id="period">
+        <button type="button" data-preset="today">Today</button>
+        <button type="button" data-preset="week">Week</button>
+        <button type="button" data-preset="month">Month</button>
+        <button type="button" data-preset="30" aria-pressed="true">30D</button>
+        <button type="button" data-preset="90">90D</button>
+        <button type="button" class="pseg-cal" id="period-more" aria-label="More periods and dates" aria-expanded="false" aria-controls="custom-range">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v16H4zM4 9h16M8 3v4M16 3v4"/></svg>
+        </button>
+      </div>
+      <div class="custom-range" id="custom-range" hidden>
+        <div class="chips" role="group" aria-label="More periods" id="period-extra">
+          <button type="button" data-preset="yesterday">Yesterday</button>
+          <button type="button" data-preset="7">7 days</button>
+          <button type="button" data-preset="all">All</button>
+          <button type="button" data-preset="custom">Pick dates</button>
+        </div>
+        <div class="range-fields" id="range-fields" hidden>
+          <label>From <input type="date" id="range-from"></label>
+          <label>To <input type="date" id="range-to"></label>
+          <label class="wide">Whole month
+            <select id="range-month"><option value="">Choose…</option></select>
+          </label>
+        </div>
+      </div>
+      <p class="period-label"><span id="period-label"></span><span id="period-days"></span></p>
+    </div>
+
+    <!-- ===================== Sales ===================== -->
+    <section class="panel" id="panel-sales" data-panel="sales" aria-label="Sales" hidden>
+      <section class="glass dark feature" id="sales-feature">
+        <p class="eyebrow" id="sales-feature-label">Sales</p>
+        <p class="feature-big"><span class="cur" id="sales-cur" aria-hidden="true"></span><span id="sales-total" class="sk">00,000</span></p>
+        <p class="hl-chip" id="sales-change" hidden></p>
+        <div class="feature-spark" id="sales-spark"></div>
+        <div class="feature-stats" id="summary"><div><strong class="sk">000</strong><span class="sk">orders</span></div><div><strong class="sk">000</strong><span class="sk">orders</span></div><div><strong class="sk">000</strong><span class="sk">orders</span></div></div>
+      </section>
+
+      <section class="card glass" id="daily-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Daily</p>
+            <h2>Sales over time</h2>
+            <p class="muted">Each day's sales. The line smooths out the ups and downs.</p>
+          </div>
+        </div>
+        <div class="plot" id="daily-chart"></div>
+        <ul class="legend chart-key">
+          <li><span class="key key-bar"></span>Daily sales</li>
+          <li><span class="key key-line"></span>7-day average</li>
+        </ul>
+        <details>
+          <summary>Show as a table</summary>
+          <table id="daily-table"></table>
+        </details>
+      </section>
+
+      <section class="card glass" id="weekly-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Trend</p>
+            <h2>Week by week</h2>
+            <p class="muted">Sales for each week (Mon–Sun), with at least the 8 weeks up to the period's end. Tap a bar for the change from the week before.</p>
+          </div>
+        </div>
+        <div class="plot" id="weekly-chart"></div>
+        <details>
+          <summary>Show as a table</summary>
+          <table id="weekly-table"></table>
+        </details>
+      </section>
+
+      <section class="card glass" id="payments-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Payments</p>
+            <h2>How customers paid</h2>
+          </div>
+        </div>
+        <p class="muted card-note" id="payments-note"></p>
+        <div id="payments"></div>
+      </section>
+    </section>
+
+    <!-- ===================== Products ===================== -->
+    <section class="panel" id="panel-products" data-panel="products" aria-label="Products" hidden>
+      <section class="glass dark feature" id="products-feature" hidden>
+        <p class="eyebrow" id="products-feature-label">Top seller</p>
+        <p class="feature-big feature-name" id="products-top">–</p>
+        <p class="hl-chip" id="products-top-detail"></p>
+        <div class="feature-stats" id="products-stats"></div>
+      </section>
+
+      <section class="card glass" id="product-card" hidden>
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Products</p>
+            <h2>Products over time</h2>
+            <p class="muted">Search for products to see how they sell day by day. Pick up to 5 to compare them.</p>
+          </div>
+          <div class="card-head-controls">
+            <div class="segmented small" role="group" aria-label="Show products" id="product-view" hidden>
+              <button type="button" data-view="combined" aria-pressed="true">Combined</button>
+              <button type="button" data-view="compare">Compare</button>
+            </div>
+            <div class="segmented small" role="group" aria-label="Show product" id="product-by">
+              <button type="button" data-by="quantity" aria-pressed="true">Number sold</button>
+              <button type="button" data-by="revenue">Sales</button>
+            </div>
+          </div>
+        </div>
+        <input type="search" class="product-search" id="product-search" placeholder="Add a product, e.g. cappuccino" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-label="Product" role="combobox" aria-autocomplete="list" aria-controls="product-suggestions" aria-expanded="false">
+        <ul class="product-suggestions" id="product-suggestions" role="listbox" aria-label="Matching products" hidden></ul>
+        <ul class="product-chips" id="product-chips" aria-label="Chosen products" hidden></ul>
+        <p class="muted card-note" id="product-note"></p>
+        <div class="plot" id="product-chart"></div>
+        <ul class="legend chart-key" id="product-legend" hidden>
+          <li><span class="key key-bar"></span><span id="product-legend-bar">Sold per day</span></li>
+          <li><span class="key key-line"></span>7-day average</li>
+        </ul>
+        <details id="product-details" hidden>
+          <summary>Show as a table</summary>
+          <table id="product-table"></table>
+        </details>
+      </section>
+
+      <div class="card-grid">
+        <section class="card glass" id="best-card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">Products</p>
+              <h2>Best sellers</h2>
+            </div>
+            <div class="segmented small" role="group" aria-label="Rank best sellers by" id="best-by">
+              <button type="button" data-by="quantity" aria-pressed="true">Number sold</button>
+              <button type="button" data-by="revenue">Sales</button>
+            </div>
+          </div>
+          <p class="muted card-note" id="best-note"></p>
+          <div id="best-sellers"></div>
+        </section>
+
+        <section class="card glass" id="slow-card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">Products</p>
+              <h2>Slow sellers</h2>
+            </div>
+            <div class="segmented small" role="group" aria-label="Rank slow sellers by" id="slow-by">
+              <button type="button" data-by="quantity" aria-pressed="true">Number sold</button>
+              <button type="button" data-by="revenue">Sales</button>
+            </div>
+          </div>
+          <p class="muted card-note" id="slow-note"></p>
+          <div id="slow-sellers"></div>
+          <h3 class="sub-head" id="unsold-head" hidden></h3>
+          <p class="muted card-note" id="unsold-note" hidden></p>
+          <ul class="unsold-list" id="unsold"></ul>
+          <button type="button" class="quiet-button" id="unsold-more" hidden></button>
+        </section>
+
+        <section class="card glass" id="category-card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">Products</p>
+              <h2>Sales by category</h2>
+            </div>
+          </div>
+          <p class="muted card-note" id="category-note"></p>
+          <div id="categories"></div>
+        </section>
+      </div>
+    </section>
+
+    <!-- ===================== Busy times ===================== -->
+    <section class="panel" id="panel-busy" data-panel="busy" aria-label="Busy times" hidden>
+      <section class="glass dark feature" id="busy-feature" hidden>
+        <p class="eyebrow" id="busy-feature-label">Busiest day</p>
+        <p class="feature-big feature-name" id="busy-top">–</p>
+        <p class="hl-chip" id="busy-top-detail"></p>
+        <div class="feature-stats" id="busy-stats"></div>
+      </section>
+
+      <div class="card-grid">
+        <section class="card glass" id="weekday-card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">Rhythm</p>
+              <h2>Busiest days</h2>
+              <p class="muted">Average sales on each day of the week.</p>
+            </div>
+          </div>
+          <div class="plot" id="weekday-chart"></div>
+          <p class="chart-note" id="weekday-note"></p>
+        </section>
+
+        <section class="card glass" id="hours-card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">Rhythm</p>
+              <h2>Busy hours</h2>
+              <p class="muted">Average orders per hour.</p>
+            </div>
+            <div class="segmented small" role="group" aria-label="Days" id="hours-kind">
+              <button type="button" data-kind="weekday" aria-pressed="true">Weekdays</button>
+              <button type="button" data-kind="weekend">Weekends</button>
+            </div>
+          </div>
+          <div class="plot" id="hours-chart"></div>
+          <p class="chart-note" id="hours-note"></p>
+        </section>
+
+        <section class="card glass" id="visitors-card" hidden>
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">Door counter</p>
+              <h2>Visitors by hour</h2>
+              <p class="muted" id="visitors-sub">People coming in each hour. Approximate: staff in aprons are left out, but a few staff may still be counted.</p>
+            </div>
+          </div>
+          <div class="plot" id="visitors-chart"></div>
+          <ul class="legend chart-key" id="visitors-legend" hidden>
+            <li><span class="key key-bar"></span>Visitors</li>
+            <li><span class="key key-line"></span>Orders</li>
+          </ul>
+          <p class="chart-note" id="visitors-note"></p>
+        </section>
+      </div>
+    </section>
+
+    <!-- ===================== Tools ===================== -->
+    <section class="panel" id="panel-tools" data-panel="tools" aria-label="Shop tools" hidden>
+      <section class="card glass status-card" id="status-card" hidden>
+        <p class="eyebrow">Shop PC</p>
+        <div class="status-main">
+          <span class="orb" id="counter-orb" aria-hidden="true"></span>
+          <div>
+            <h2 id="counter-title">Door counter</h2>
+            <p class="muted" id="counter-detail"></p>
+          </div>
+        </div>
+        <div class="status-grid" id="status-grid"></div>
+      </section>
+
+      <section class="card glass" id="recon-card" hidden>
+        <p class="eyebrow">Reports</p>
+        <h2>Cash summary workbook</h2>
+        <p class="muted card-sub">Pick a month and it downloads. NOT OK days are listed at the top, and it can be run mid-month.</p>
+        <form class="recon-box" id="recon" hidden>
+          <label for="recon-month" class="sr-only">Month</label>
+          <input type="month" id="recon-month" class="field" required />
+          <label class="file-button recon-previous">
+            <input type="file" id="recon-previous" accept=".xlsx" />
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+            <span id="recon-previous-name">Add last month's workbook (optional)</span>
+          </label>
+          <p class="muted recon-hint">The finished copy, with the banking filled in, carries its outstanding cash over to "Outstanding prv month".</p>
+          <button type="submit" class="primary-button" id="recon-download">Download</button>
+          <p class="muted" id="recon-status" role="status" hidden></p>
+        </form>
+      </section>
+
+      <section class="card glass" id="notify-card" hidden>
+        <p class="eyebrow">This phone</p>
+        <h2>Notifications</h2>
+        <div class="list">
+          <button type="button" class="list-row notify-button" id="notify" aria-pressed="false">
+            <span class="list-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>
+            <span class="list-text"><span id="notify-label">Get the day's sales each evening</span><small>7pm Monday to Saturday, 2pm on Sunday</small></span>
+            <span class="switch" aria-hidden="true"></span>
+          </button>
+          <button type="button" class="list-row" id="notify-test" hidden>
+            <span class="list-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></span>
+            <span class="list-text">Send a test<small>Today's sales so far, straight away</small></span>
+            <span class="chev" aria-hidden="true">›</span>
+          </button>
+        </div>
+        <p class="notify-status muted" id="notify-status" role="status" hidden></p>
+      </section>
+
+      <section class="card glass" id="data-card">
+        <p class="eyebrow">Data</p>
+        <h2>Uploads &amp; data</h2>
+        <div class="list">
+          <a class="list-row" href="upload.html" id="upload-link" hidden>
+            <span class="list-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg></span>
+            <span class="list-text">Upload older exports<small>New figures come from CuisineIQ automatically</small></span>
+            <span class="chev" aria-hidden="true">›</span>
+          </a>
+          <details class="list-details about">
+            <summary class="list-row">
+              <span class="list-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8h.01M11 12h1v5h1"/></svg></span>
+              <span class="list-text">About this data<small id="files-count"></small></span>
+              <span class="chev" aria-hidden="true">›</span>
+            </summary>
+            <ul id="files"></ul>
+          </details>
+          <a class="list-row" href="/logout" id="signout" hidden>
+            <span class="list-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></span>
+            <span class="list-text">Sign out<small>You'll need the PIN to get back in</small></span>
+            <span class="chev" aria-hidden="true">›</span>
+          </a>
+        </div>
+      </section>
+
+      <section class="card glass missing" id="missing-card" hidden>
+        <p class="eyebrow">Coming later</p>
+        <h2>Not in these exports</h2>
+        <p class="muted">CuisineIQ's exports only give daily or period totals, so these can't be shown yet:</p>
+        <ul id="missing-list"></ul>
+        <p class="muted">They need an export (or API) with one row per item sold, including the time and payment type.</p>
+      </section>
+    </section>
+  </main>
+
+  <nav class="tabbar glass" aria-label="Sections">
+    <a href="#today" class="tab" data-tab="today" aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Today
+    </a>
+    <a href="#sales" class="tab" data-tab="sales">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>Sales
+    </a>
+    <a href="#products" class="tab" data-tab="products">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12l1 13H5zM9 7a3 3 0 0 1 6 0"/></svg>Products
+    </a>
+    <a href="#busy" class="tab" data-tab="busy">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7v5l3 2"/></svg>Busy
+    </a>
+    <a href="#tools" class="tab" data-tab="tools">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg>Tools
+    </a>
+  </nav>
+
+  <!-- Ask Claude: a search-style box drops in at the top and the dashboard blurs behind it -->
+  <div class="ask" id="ask" role="dialog" aria-modal="true" aria-label="Ask about the sales" hidden>
+    <div class="ask-dim" id="ask-dim"></div>
+    <div class="ask-spot">
+      <div class="ask-row">
+        <form class="ask-field" id="ask-form">
+          <span class="spark-tile" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9zM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg></span>
+          <input id="ask-input" type="text" maxlength="500" autocomplete="off" enterkeyhint="send" placeholder="Ask about sales…" aria-label="Your question" required>
+          <button type="button" class="ask-clear" id="ask-clear" aria-label="Clear" hidden>×</button>
+          <button type="submit" class="ask-send" id="ask-send" aria-label="Ask">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+          </button>
+        </form>
+        <button type="button" class="ask-cancel" id="ask-close">Cancel</button>
+      </div>
+
+      <div class="ask-panel" id="ask-ideas">
+        <p class="ask-lab">Suggestions</p>
+        <div id="ask-suggestions"></div>
+        <p class="ask-lab" id="ask-recent-lab" hidden>Recent</p>
+        <div id="ask-recent"></div>
+      </div>
+
+      <div class="ask-thread" id="ask-thread"></div>
+      <div class="ask-related" id="ask-related" hidden></div>
+    </div>
+  </div>
+
+  <script type="module" src="js/dashboard.js"></script>
+</body>
+</html>

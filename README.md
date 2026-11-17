@@ -29,7 +29,10 @@ A single-page, static site built as a **bento grid**: tiles for the intro, heads
 │   ├── tbh-dtdl.png / global-marketplace.jpeg / kgn-dtdl.jpg   # Experience logos
 │   └── favicon_io/            # Favicons (incl. dt-icon.svg) + site.webmanifest
 ├── work/
-│   └── lcs-ceo-dashboard.html # Interactive CEO dashboard concept for Le Coffee Shop (sample data)
+│   ├── lcs-ceo-dashboard.html # Case-study page: Le Coffee Shop dashboard in a phone frame (full screen on mobile)
+│   ├── lcs-dashboard/         # Copy of the real Le Coffee Shop dashboard frontend, sample data only
+│   │                          #   (source: "sample", dates slid forward to today, api/* calls stubbed off)
+│   └── keyzee-dashboard/      # Keyzee dashboard frontend with dummy data (fetch stubbed, Odoo links off)
 ├── tools/
 │   └── build-og-image.py      # Regenerates og-image.svg and the OG .jpg
 ├── icon.af                    # Affinity Designer source for the old badge logo

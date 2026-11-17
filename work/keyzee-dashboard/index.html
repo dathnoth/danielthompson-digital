@@ -1,0 +1,4519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="demo-shim.js"></script>
+<meta name="robots" content="noindex">
+<title>Keyzee Dashboard · Demo (dummy data) — danielthompson.digital</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --kz-orange:       #ec7d13;
+    --kz-orange-dark:  #c9670d;
+    --kz-orange-light: #f9a855;
+    --kz-white:        #ffffff;
+    --kz-light:        #f5f4f2;
+    --kz-mid:          #e8e8e8;
+    --kz-dark:         #1a1a1a;
+    --kz-text:         #3a3a3a;
+    --kz-muted:        #7a7a7a;
+
+    --bg:          var(--kz-orange);
+    --surface:     var(--kz-white);
+    --surface2:    var(--kz-mid);
+    --border:      var(--kz-mid);
+    --accent:      var(--kz-orange);
+    --accent2:     #16a34a;
+    --accent-dim:  rgba(236,125,19,0.10);
+    --accent-light:var(--kz-orange-light);
+    --red:         #dc2626;
+    --red-dim:     rgba(220,38,38,0.10);
+    --amber:       #d97706;
+    --amber-dim:   rgba(217,119,6,0.10);
+    --green:       #16a34a;
+    --green-dim:   rgba(22,163,74,0.10);
+    --text:        var(--kz-text);
+    --muted:       var(--kz-muted);
+    --mono: 'DM Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  /* ── Login ── */
+  .login-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+
+  .login-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    width: 320px;
+  }
+
+  .login-brand {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+  }
+
+  .login-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: -12px;
+    align-self: flex-start;
+  }
+
+  .login-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+    letter-spacing: 0.1em;
+  }
+
+  .login-input:focus { border-color: var(--accent); }
+
+  .login-btn {
+    width: 100%;
+    background: var(--accent);
+    color: var(--kz-white);
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .login-btn:hover { opacity: 0.88; }
+  .login-btn:disabled { opacity: 0.5; cursor: default; }
+
+  .login-error {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--red);
+    margin-top: -12px;
+    min-height: 16px;
+  }
+
+  /* ── Layout ── */
+  body {
+    background-color: var(--bg);
+    background-image: radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px);
+    background-size: 22px 22px;
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 24px 48px;
+  }
+
+  body.night {
+    background-image: radial-gradient(circle, rgba(255,255,255,0.055) 1px, transparent 1px);
+  }
+
+  .dashboard {
+    width: 100%;
+    max-width: 960px;
+  }
+
+  .sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bg);
+    padding-top: 48px;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 40px;
+  }
+
+  .brand { display: flex; flex-direction: column; gap: 4px; }
+
+  .brand-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .brand-name {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+  }
+
+  /* ── Controls ── */
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+
+  .date-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+  }
+
+  .date-input-wrap span {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+
+  .date-input-wrap input {
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-size: 13px;
+    width: 130px;
+    color: var(--text);
+    font-family: var(--mono);
+    outline: none;
+    color-scheme: dark;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) opacity(0.5);
+    cursor: pointer;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    filter: invert(1) opacity(0.9);
+  }
+
+  .logo {
+    height: 36px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  .presets { display: flex; gap: 6px; }
+
+  .preset-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 12px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.06em;
+  }
+
+  .preset-btn:hover, .preset-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .btn {
+    background: var(--accent);
+    color: var(--kz-white);
+    border: none;
+    border-radius: 6px;
+    padding: 9px 18px;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: opacity 0.2s, transform 0.1s;
+    margin-left: auto;
+  }
+
+  .btn:hover { opacity: 0.88; }
+  .btn:active { transform: scale(0.98); }
+
+  /* ── Grids ── */
+  .kpi-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .kpi-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  /* ── Cards ── */
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    position: relative;
+    transition: border-color 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 10px;
+    background: var(--accent);
+    opacity: 0;
+    border-radius: 12px 12px 0 0;
+    transition: opacity 0.3s;
+  }
+
+  .kpi-card.loaded::before { opacity: 1; }
+
+  /* ── Tooltip ── */
+  .kpi-label-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .kpi-label-row .kpi-label { margin-bottom: 0; }
+
+  .kpi-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  a.kpi-label, a.ft-label {
+    text-decoration: none;
+    color: var(--muted);
+    transition: color 0.15s;
+  }
+
+  a.kpi-label:hover, a.ft-label:hover {
+    color: var(--accent);
+  }
+
+  a.kpi-label::after, a.ft-label::after {
+    content: ' ↗';
+    font-size: 12px;
+    color: var(--accent);
+    opacity: 0.7;
+    transition: opacity 0.15s;
+    letter-spacing: 0;
+    vertical-align: 1px;
+  }
+
+  a.kpi-label:hover::after, a.ft-label:hover::after {
+    opacity: 1;
+  }
+
+  .tip-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .tip-icon {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1px solid var(--muted);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 8px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: help;
+    line-height: 1;
+    user-select: none;
+    flex-shrink: 0;
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .tip-wrap:hover .tip-icon {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .tip-box {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: -8px;
+    width: 270px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    z-index: 200;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  }
+
+  body.night .tip-box {
+    background: #222228;
+    border-color: var(--border);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+  }
+
+  .tip-wrap:hover .tip-box { opacity: 1; }
+
+  .tip-desc {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+
+  .tip-detail {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .tip-key { color: var(--accent); }
+
+  .stage-filter-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--surface2);
+    transition: border-color 0.15s, color 0.15s;
+    user-select: none;
+  }
+  .stage-filter-label:hover { border-color: var(--accent); color: var(--text); }
+  .stage-filter-label input { cursor: pointer; accent-color: var(--accent); }
+
+  /* ── KPI values ── */
+  .kpi-value {
+    font-family: var(--mono);
+    font-size: 42px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+  }
+
+  .kpi-value.loading {
+    background: linear-gradient(90deg, var(--surface2) 25%, var(--border) 50%, var(--surface2) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 6px;
+    width: 60%;
+    height: 46px;
+    color: transparent;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  @keyframes tabFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .tab-panel-entering {
+    animation: tabFadeIn 0.22s ease forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tab-panel-entering { animation: none; }
+  }
+
+  .kpi-meta {
+    margin-top: 10px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .kpi-meta .up { color: var(--accent2); }
+  .kpi-meta .down { color: #f87171; }
+
+  .kpi-sub {
+    margin-top: 6px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .kpi-suffix {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-left: 6px;
+    letter-spacing: 0;
+  }
+
+  /* ── Breakdown cards ── */
+  .kpi-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .kpi-breakdown.loading .breakdown-value {
+    background: linear-gradient(90deg, var(--surface2) 25%, var(--border) 50%, var(--surface2) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 4px;
+    color: transparent;
+    min-width: 48px;
+  }
+
+  .kpi-breakdown.loading .breakdown-label {
+    opacity: 0.4;
+  }
+
+  .breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .breakdown-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .breakdown-value {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Chart card ── */
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 16px;
+    position: relative;
+    transition: border-color 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .chart-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 10px;
+    background: var(--accent);
+    opacity: 0;
+    border-radius: 12px 12px 0 0;
+    transition: opacity 0.3s;
+  }
+
+  .chart-card.loaded::before { opacity: 1; }
+
+  .chart-wrap {
+    height: 220px;
+    position: relative;
+  }
+
+  /* ── Apply date btn ── */
+  .apply-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 14px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+
+  .apply-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  /* ── Fulfilment by type card ── */
+  .type-buckets-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    margin-top: 4px;
+  }
+
+  .type-bucket-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .type-bucket-heading {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .type-bucket-total {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* ── Fulfilment buckets ── */
+  .bucket-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .bucket-row {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .bucket-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .bucket-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .bucket-stat {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bucket-bar-bg {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .bucket-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.6s ease;
+  }
+
+  .bucket-green .bucket-stat { color: var(--green); }
+  .bucket-green .bucket-bar-fill { background: var(--green); }
+  .bucket-amber .bucket-stat { color: var(--amber); }
+  .bucket-amber .bucket-bar-fill { background: var(--amber); }
+  .bucket-red .bucket-stat { color: var(--red); }
+  .bucket-red .bucket-bar-fill { background: var(--red); }
+
+  /* ── Refunds ── */
+  .refund-pair {
+    display: flex;
+    gap: 24px;
+    align-items: flex-end;
+  }
+
+  .refund-item { display: flex; flex-direction: column; gap: 4px; }
+
+  .refund-sub {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .refund-val {
+    font-family: var(--mono);
+    font-size: 36px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--red);
+    line-height: 1;
+  }
+
+  .refund-val.loading {
+    background: linear-gradient(90deg, var(--surface2) 25%, var(--border) 50%, var(--surface2) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 6px;
+    width: 80px;
+    height: 36px;
+    color: transparent;
+  }
+
+  /* ── Table cards ── */
+  .table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    position: relative;
+    transition: border-color 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .table-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 10px;
+    background: var(--accent);
+    opacity: 0;
+    border-radius: 12px 12px 0 0;
+    transition: opacity 0.3s;
+  }
+
+  .table-card.loaded::before { opacity: 1; }
+
+  .rank-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 4px;
+  }
+
+  .rank-table th {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 0 0 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .rank-table th:last-child { text-align: right; }
+
+  .rank-table td {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(42,42,50,0.5);
+    vertical-align: middle;
+  }
+
+  .rank-table td:last-child {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rank-table tr:last-child td { border-bottom: none; }
+
+  .rank-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    min-width: 20px;
+    display: inline-block;
+  }
+
+  .rank-name {
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+  }
+
+  .rank-rev { color: var(--accent); }
+  .rank-count { color: var(--muted); font-size: 11px; }
+
+  .table-loading {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    padding: 24px 0;
+  }
+
+  .table-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 8px 0;
+  }
+
+  .table-skeleton-row {
+    height: 14px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--surface2) 25%, var(--border) 50%, var(--surface2) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+  }
+
+  .table-skeleton-row:nth-child(2) { width: 85%; animation-delay: 0.1s; }
+  .table-skeleton-row:nth-child(3) { width: 90%; animation-delay: 0.2s; }
+  .table-skeleton-row:nth-child(4) { width: 75%; animation-delay: 0.3s; }
+  .table-skeleton-row:nth-child(5) { width: 88%; animation-delay: 0.4s; }
+
+  /* ── Error / footer ── */
+  .error-msg {
+    background: rgba(248,113,113,0.08);
+    border: 1px solid rgba(248,113,113,0.3);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #f87171;
+    display: none;
+    margin-bottom: 24px;
+  }
+
+  .last-updated {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 20px;
+    display: block;
+  }
+
+  footer {
+    margin-top: 48px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    letter-spacing: 0.06em;
+    line-height: 1.8;
+  }
+
+  footer a {
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  footer a:hover {
+    color: var(--accent);
+  }
+
+  /* ── Active Order Fulfilment ── */
+  .active-fulfil-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  .active-fulfil-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 10px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-light));
+    border-radius: 12px 12px 0 0;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .section-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .section-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .live-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--accent-dim);
+    border: 1px solid rgba(236,125,19,0.3);
+    border-radius: 4px;
+    padding: 3px 8px;
+    white-space: nowrap;
+  }
+
+  .active-buckets-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 12px;
+  }
+
+  .active-bucket {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    text-decoration: none;
+    position: relative;
+  }
+  .active-bucket:hover {
+    border-color: var(--accent);
+    background: var(--surface);
+  }
+
+  .ab-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .active-bucket .ab-label::after {
+    content: ' ↗';
+    font-size: 12px;
+    color: var(--accent);
+    opacity: 0.7;
+    transition: opacity 0.15s;
+    letter-spacing: 0;
+    vertical-align: 1px;
+  }
+
+  .active-bucket:hover .ab-label::after {
+    opacity: 1;
+  }
+
+  .ab-count {
+    font-family: var(--mono);
+    font-size: 38px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .ab-pct {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
+  .ab-pct.good { color: var(--green); }
+  .ab-pct.bad  { color: var(--red); }
+
+  .ab-target {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .ab-footer {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 14px;
+  }
+
+  /* ── Tab nav ── */
+  .tab-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+    gap: 8px;
+  }
+
+  /* Scrollable tab button row — hides scrollbar visually */
+  .tab-btns {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex: 1;
+    min-width: 0;
+  }
+  .tab-btns::-webkit-scrollbar { display: none; }
+
+  .tab-btn {
+    background: none;
+    border: none;
+    padding: 10px 20px;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .tab-btn:hover { color: var(--text); }
+
+  .tab-btn.active {
+    color: var(--text);
+    border-bottom-color: var(--text);
+  }
+
+  /* ── Night mode toggle ── */
+  .night-toggle {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 15px;
+    cursor: pointer;
+    line-height: 1;
+    transition: border-color 0.15s, background 0.15s;
+    flex-shrink: 0;
+  }
+  .night-toggle:hover { border-color: var(--accent); }
+
+  /* ── Night mode variables ── */
+  body.night {
+    --bg:       #0e0e10;
+    --surface:  #18181c;
+    --surface2: #222228;
+    --border:   #2e2e36;
+    --text:     #e4e4e8;
+    --muted:    #88888f;
+  }
+
+  body.night .kpi-card,
+  body.night .chart-card,
+  body.night .table-card {
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  }
+
+  body.night input[type="date"] { color-scheme: dark; }
+
+  /* ── OC Search ── */
+  .oc-search-wrap { position: relative; max-width: 480px; margin-bottom: 8px; }
+  .oc-search-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .oc-search-input:focus { border-color: var(--accent); }
+  .oc-search-input::placeholder { color: var(--muted); }
+
+  .oc-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0; right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    z-index: 50;
+    max-height: 240px;
+    overflow-y: auto;
+  }
+  .oc-dropdown-item {
+    padding: 10px 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+  .oc-dropdown-item:last-child { border-bottom: none; }
+  .oc-dropdown-item:hover { background: var(--surface2); color: var(--accent); }
+  .oc-dropdown-empty { padding: 12px 14px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+  .oc-selected-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent-dim);
+    border: 1px solid var(--accent);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 24px;
+  }
+  .oc-selected-badge button {
+    background: none; border: none; color: var(--accent);
+    cursor: pointer; font-size: 16px; padding: 0; line-height: 1; opacity: 0.6;
+  }
+  .oc-selected-badge button:hover { opacity: 1; }
+
+  .oc-placeholder {
+    text-align: center;
+    padding: 64px 20px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+
+  .oc-select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text);
+    cursor: pointer;
+    outline: none;
+  }
+
+  .oc-total {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 500;
+    margin-left: auto;
+    margin-right: 6px;
+  }
+
+  .oc-multi-grid { display: flex; margin-top: 14px; }
+  .oc-multi-cell {
+    flex: 1;
+    text-align: center;
+    padding: 0 8px;
+    border-right: 1px solid var(--border);
+  }
+  .oc-multi-cell:first-child { padding-left: 0; }
+  .oc-multi-cell:last-child  { border-right: none; padding-right: 0; }
+  .oc-multi-cell .kpi-value  { font-size: 28px; min-height: unset; justify-content: center; }
+  .oc-multi-cell .kpi-sub    { font-size: 10px; color: var(--muted); margin-top: 4px; font-family: var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
+
+  /* ── OC Summary report ── */
+  .oc-report-actions { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+  .oc-report-actions .btn { margin-left: 0; padding: 7px 14px; font-size: 12px; white-space: nowrap; }
+  #oc-report-card .kpi-label-row { flex-wrap: wrap; row-gap: 10px; }
+  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn:disabled { opacity: 0.5; cursor: default; }
+  .oc-report-body { font-size: 14px; line-height: 1.65; color: var(--text); }
+  .oc-report-body p + p { margin-top: 12px; }
+  .oc-report-empty { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .oc-report-error { font-family: var(--mono); font-size: 12px; color: var(--red); }
+  .oc-report-meta { margin-top: 12px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+  .prompt-overlay {
+    position: fixed; inset: 0; z-index: 90;
+    background: rgba(0,0,0,0.45);
+    display: none; align-items: center; justify-content: center;
+    padding: 16px;
+  }
+  .prompt-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px 28px;
+    width: min(760px, 100%);
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .prompt-box h3 { font-size: 18px; font-weight: 800; color: var(--text); }
+  .prompt-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .prompt-row > label { flex: 1; min-width: 220px; }
+  .prompt-label {
+    display: block; margin-bottom: 6px;
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .prompt-input, .prompt-textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-family: var(--mono); font-size: 12px; color: var(--text);
+    outline: none;
+  }
+  .prompt-input:focus, .prompt-textarea:focus { border-color: var(--accent); }
+  .prompt-textarea { min-height: 300px; resize: vertical; line-height: 1.5; }
+  .prompt-hint { font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 1.5; }
+  .prompt-hint code { color: var(--accent); }
+  .prompt-preview {
+    white-space: pre-wrap;
+    background: var(--surface2); border-radius: 8px; padding: 12px;
+    font-family: var(--mono); font-size: 11px; color: var(--text);
+    max-height: 260px; overflow-y: auto; margin-top: 8px;
+  }
+  .prompt-box details summary { cursor: pointer; font-family: var(--mono); font-size: 12px; color: var(--accent); }
+  .prompt-footer { display: flex; gap: 8px; align-items: center; }
+  .prompt-footer .btn { margin-left: 0; }
+  .prompt-footer .spacer { flex: 1; }
+
+  /* Section dividers ── */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 32px 0 20px;
+  }
+
+
+  .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .section-divider-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* ── Chart controls ── */
+  .chart-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .chart-toggle-group {
+    display: flex;
+    gap: 4px;
+  }
+
+  .chart-toggle-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 5px 10px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.06em;
+  }
+
+  .chart-toggle-btn:hover,
+  .chart-toggle-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .chart-presets {
+    display: flex;
+    gap: 4px;
+  }
+
+  .chart-preset-btn {
+    opacity: 0.75;
+  }
+  .chart-preset-btn.active {
+    opacity: 1;
+  }
+
+  /* ── Completed Fulfilment tiles ── */
+  .fulfil-tiles-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-top: 4px;
+  }
+
+  .fulfil-tile {
+    background: var(--surface2);
+    border: 1px solid rgba(74, 222, 128, 0.2);
+    border-radius: 10px;
+    padding: 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .ft-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .ft-value {
+    font-family: var(--mono);
+    font-size: 36px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--green);
+    line-height: 1;
+  }
+
+  /* ── Responsive ── */
+
+/* ── NPS comments ── */
+  .nps-comment-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .nps-comment-card { background: var(--surface2); border-radius: 8px; padding: 14px 16px; border-left: 3px solid var(--accent); }
+  .nps-comment-text { font-size: 13px; color: var(--text); line-height: 1.5; margin-bottom: 8px; }
+  .nps-comment-meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .nps-comment-contact { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .nps-comment-right { display: flex; gap: 10px; align-items: center; }
+  .nps-comment-date { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .nps-comment-order { font-family: var(--mono); font-size: 10px; color: var(--accent); text-decoration: none; }
+  .nps-comment-order:hover { text-decoration: underline; }
+  @media (max-width: 860px) { .nps-comment-list { grid-template-columns: 1fr; } }
+
+  /* Tablet: collapse 3-col to 2-col */
+  @media (max-width: 860px) {
+    .oc-grid-3 { grid-template-columns: 1fr 1fr !important; }
+    .oc-grid-4 { grid-template-columns: 1fr 1fr !important; }
+    .kpi-grid-3 {
+      grid-template-columns: 1fr 1fr;
+    }
+    .type-buckets-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .active-buckets-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .fulfil-tiles-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  /* Mobile: single column everything */
+  @media (max-width: 600px) {
+    body {
+      padding: 24px 14px;
+    }
+
+    .dashboard {
+      width: 100%;
+    }
+
+    header {
+      margin-bottom: 24px;
+    }
+
+    .logo {
+      height: 28px;
+    }
+
+    /* Controls stack in two rows */
+    .controls {
+      gap: 8px;
+    }
+
+    .date-input-wrap {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .date-input-wrap input {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .apply-btn {
+      align-self: stretch;
+    }
+
+    .presets {
+      order: 4;
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    .btn {
+      margin-left: 0;
+      order: 5;
+    }
+
+    /* Single column grids */
+    .kpi-grid-2,
+    .kpi-grid-3,
+    .type-buckets-grid,
+    .active-buckets-grid,
+    .fulfil-tiles-grid {
+      grid-template-columns: 1fr;
+    }
+
+    /* Smaller KPI values */
+    .kpi-value {
+      font-size: 34px;
+      min-height: 38px;
+    }
+
+    .kpi-value.loading {
+      height: 38px;
+    }
+
+    /* Card padding */
+    .kpi-card,
+    .chart-card,
+    .table-card {
+      padding: 18px 18px;
+    }
+
+    /* Shorter chart */
+    .chart-wrap {
+      height: 170px;
+    }
+
+    /* Bucket stats smaller */
+    .bucket-stat {
+      font-size: 15px;
+    }
+
+    /* Refunds side by side still fine, just tighten */
+    .refund-val {
+      font-size: 28px;
+    }
+
+    /* Login box full width */
+    .login-box {
+      width: 100%;
+      max-width: 340px;
+      padding: 32px 20px;
+    }
+
+    /* Rank name wider on mobile */
+    .rank-name {
+      max-width: 120px;
+    }
+
+    /* Tip box doesn't overflow screen */
+    .tip-box {
+      width: 220px;
+      left: auto;
+      right: -8px;
+    }
+
+    /* Header — smaller brand name */
+    .brand-name { font-size: 20px; }
+
+    /* Tab buttons — tighter padding & font */
+    .tab-btn {
+      padding: 10px 12px;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+
+    /* Night toggle — smaller */
+    .night-toggle { padding: 6px 9px; font-size: 14px; flex-shrink: 0; }
+
+    /* OC grids → 1 col */
+    .oc-grid-3 { grid-template-columns: 1fr !important; }
+    .oc-grid-4 { grid-template-columns: 1fr !important; }
+
+    /* OC multi-cell values smaller */
+    .oc-multi-cell .kpi-value { font-size: 22px; }
+
+    /* OC search full-width comfortable */
+    .oc-search-wrap { max-width: 100%; }
+  }
+
+  /* ── Portfolio demo additions ── */
+  #login-overlay { display: none !important; }
+  .demo-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 2000; display: flex; align-items: center; justify-content: center; gap: 18px; flex-wrap: wrap; padding: 10px 20px; background: #ec7d13; color: #1a1a1a; font-family: var(--mono, monospace); font-size: 13px; line-height: 1.4; box-shadow: 0 2px 12px rgba(0,0,0,.35); }
+  .demo-bar strong { font-weight: 700; }
+  .demo-bar a { color: #1a1a1a; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+  .demo-bar a:focus-visible { outline: 2px solid #1a1a1a; outline-offset: 2px; }
+  body, body.night { padding-top: var(--demo-h, 44px) !important; }
+  .sticky-header { top: var(--demo-h, 44px) !important; }
+  #demo-toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); z-index: 2001; background: #1a1a1a; color: #fff; border: 1px solid #ec7d13; padding: 10px 16px; border-radius: 10px; font-family: var(--mono, monospace); font-size: 12px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; }
+  #demo-toast.show { opacity: 1; transform: translate(-50%, 0); }
+  @media (max-width: 600px) { .demo-bar { justify-content: flex-start; gap: 4px 14px; padding: 9px 14px; font-size: 12px; } }
+</style>
+</head>
+<body>
+<div class="demo-bar" id="demo-bar" role="note"><span><strong>Demo dashboard</strong> — all figures are dummy data, not real Keyzee numbers.</span><a href="../../#work">← Back to portfolio</a></div>
+
+<!-- Login overlay -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <div class="login-brand">Keyzee</div>
+    <span class="login-label">Password</span>
+    <input class="login-input" type="password" id="login-password" placeholder="Enter password" autocomplete="current-password">
+    <div class="login-error" id="login-error"></div>
+    <button class="login-btn" onclick="submitLogin()">Access Dashboard</button>
+  </div>
+</div>
+
+<!-- OC Summary prompt editor -->
+<div class="prompt-overlay" id="prompt-overlay" onclick="if (event.target === this) ocClosePromptEditor()">
+  <div class="prompt-box">
+    <h3>OC Summary Prompt</h3>
+    <div class="oc-report-error" id="prompt-msg"></div>
+    <div class="prompt-row">
+      <label>
+        <span class="prompt-label">Claude API key</span>
+        <input class="prompt-input" type="password" id="prompt-api-key" placeholder="sk-ant-…" autocomplete="off">
+      </label>
+      <label>
+        <span class="prompt-label">Model</span>
+        <select class="prompt-input" id="prompt-model">
+          <option value="claude-opus-5-5">Claude Opus 5.5 (best writing)</option>
+          <option value="claude-sonnet-5-5">Claude Sonnet 5.5 (faster, cheaper)</option>
+          <option value="claude-haiku-5-5">Claude Haiku 5.5 (fastest, cheapest)</option>
+        </select>
+      </label>
+    </div>
+    <div class="prompt-hint">The key is saved only in this browser (localStorage) and is sent straight to Anthropic, never to the worker.</div>
+    <label>
+      <span class="prompt-label">Prompt</span>
+      <textarea class="prompt-textarea" id="prompt-text" spellcheck="false" oninput="ocUpdatePromptPreview()"></textarea>
+    </label>
+    <div class="prompt-hint">
+      Placeholders: <code>{{oc_name}}</code> <code>{{date_from}}</code> <code>{{date_to}}</code> <code>{{stats}}</code> (every OC metric below, as a list).
+      Individual values: <code>{{received}}</code> <code>{{completed}}</code> <code>{{open}}</code> <code>{{avg_fulfilment_days}}</code> <code>{{within3_pct}}</code> <code>{{within10_pct}}</code> <code>{{tickets_open}}</code> <code>{{tickets_closed}}</code> <code>{{nps}}</code>
+    </div>
+    <details>
+      <summary>Preview the prompt for the selected OC</summary>
+      <div class="prompt-preview" id="prompt-preview"></div>
+    </details>
+    <div class="prompt-footer">
+      <button class="btn btn-ghost" onclick="ocResetPrompt()">Reset to default</button>
+      <span class="spacer"></span>
+      <button class="btn btn-ghost" onclick="ocClosePromptEditor()">Cancel</button>
+      <button class="btn" onclick="ocSavePromptEditor()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="dashboard">
+
+  <div class="sticky-header">
+
+  <header>
+    <div class="brand" style="flex-direction:row; align-items:center; gap:14px">
+      <img src="keyzee-logo.png" alt="Keyzee" class="logo">
+      <span class="brand-name">Dashboard</span>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="date-input-wrap">
+      <span>From</span>
+      <input type="date" id="date-from">
+    </div>
+    <div class="date-input-wrap">
+      <span>To</span>
+      <input type="date" id="date-to">
+    </div>
+    <div class="presets">
+      <button class="preset-btn" onclick="setPreset(event, 7)">7D</button>
+      <button class="preset-btn active" onclick="setPreset(event, 30)">30D</button>
+      <button class="preset-btn" onclick="setPreset(event, 90)">90D</button>
+      <button class="preset-btn" onclick="setPreset(event, 365)">1Y</button>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+      <span id="sync-status" style="font-family:var(--mono);font-size:11px;color:var(--muted)"></span>
+      <button class="btn" id="sync-btn" onclick="syncCache()" title="Force refresh from Odoo" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)">↻ Refresh</button>
+      <button class="btn" onclick="fetchData()">Apply</button>
+    </div>
+  </div>
+
+  <div class="tab-nav" style="justify-content:space-between; align-items:center">
+    <div class="tab-btns">
+      <button class="tab-btn active" onclick="switchTab('sales')">Sales</button>
+      <button class="tab-btn" onclick="switchTab('fulfilment')">Fulfilment</button>
+      <button class="tab-btn" onclick="switchTab('support')">Support</button>
+      <button class="tab-btn" onclick="switchTab('oc')">OC Perf.</button>
+      <button class="tab-btn" onclick="switchTab('purchasing')">Purchasing</button>
+      <button class="tab-btn" onclick="switchTab('warehouse')">Warehouse</button>
+      <button class="tab-btn" onclick="switchTab('nps')">NPS</button>
+    </div>
+    <button class="night-toggle" id="night-toggle-btn" onclick="toggleNight()" title="Toggle night mode">🌙</button>
+  </div>
+
+  </div><!-- /.sticky-header -->
+
+  <div id="dash-error" class="error-msg"></div>
+
+  <!-- ── Tab: Sales ── -->
+  <div class="tab-panel tab-sales">
+
+  <!-- ── Section: Revenue & Orders ── -->
+  <div class="section-divider"><span class="section-divider-label">Revenue &amp; Orders</span></div>
+
+  <!-- Revenue & AOV -->
+  <div class="kpi-grid-2">
+    <div class="kpi-card" id="card-revenue">
+      <div class="kpi-label-row">
+        <span class="kpi-label">Revenue (excl. tax)</span>
+        <div class="tip-wrap">
+          <span class="tip-icon">?</span>
+          <div class="tip-box">
+            <div class="tip-desc">Total sales revenue from invoiced orders in the selected period, excl. GST. Only orders with invoice_status = 'invoiced' are included — confirmed-but-not-yet-invoiced orders are excluded.</div>
+            <div class="tip-detail"><span class="tip-key">Table: </span>sale.order</div>
+            <div class="tip-detail"><span class="tip-key">Field: </span>amount_untaxed (excl. GST)</div>
+            <div class="tip-detail"><span class="tip-key">Formula: </span>SUM(amount_untaxed) WHERE state IN ('sale','done') AND invoice_status = 'invoiced' AND date_order IN range</div>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-value loading" id="val-revenue">—</div>
+      <div class="kpi-meta" id="meta-revenue"></div>
+      <div class="kpi-sub" id="orders-count"></div>
+    </div>
+    <div class="kpi-card" id="card-aov">
+      <div class="kpi-label-row">
+        <span class="kpi-label">Avg. Order Value</span>
+        <div class="tip-wrap">
+          <span class="tip-icon">?</span>
+          <div class="tip-box">
+            <div class="tip-desc">The average dollar value of each invoiced order in the period, excl. GST. Only orders with invoice_status = 'invoiced' are included.</div>
+            <div class="tip-detail"><span class="tip-key">Table: </span>sale.order</div>
+            <div class="tip-detail"><span class="tip-key">Field: </span>amount_untaxed (excl. GST)</div>
+            <div class="tip-detail"><span class="tip-key">Formula: </span>SUM(amount_untaxed) ÷ COUNT(id) WHERE state IN ('sale','done') AND invoice_status = 'invoiced'</div>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-value loading" id="val-aov">—</div>
+      <div class="kpi-meta" id="meta-aov"></div>
+    </div>
+  </div>
+
+  <!-- Row 2: Order status counts -->
+  <div class="kpi-grid-3">
+    <div class="kpi-card" id="card-received">
+      <div class="kpi-label-row">
+        <span class="kpi-label">Orders Received</span>
+        <div class="tip-wrap">
+          <span class="tip-icon">?</span>
+          <div class="tip-box">
+            <div class="tip-desc">All orders created in the period, regardless of whether they have been confirmed yet.</div>
+            <div class="tip-detail"><span class="tip-key">Table: </span>sale.order</div>
+            <div class="tip-detail"><span class="tip-key">Formula: </span>COUNT(id) WHERE create_date IN range AND state != 'cancel'</div>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-value loading" id="val-received">—</div>
+      <div class="kpi-meta" id="meta-received"></div>
+    </div>
+    <div class="kpi-card" id="card-approved">
+      <div class="kpi-label-row">
+        <span class="kpi-label">Orders Approved</span>
+        <div class="tip-wrap">
+          <span class="tip-icon">?</span>
+          <div class="tip-box">
+            <div class="tip-desc">Confirmed orders that have been invoiced in the selected period. Orders confirmed but not yet invoiced are excluded.</div>
+            <div class="tip-detail"><span class="tip-key">Table: </span>sale.order</div>
+            <div class="tip-detail"><span class="tip-key">Formula: </span>COUNT(id) WHERE state IN ('sale','done') AND invoice_status = 'invoiced' AND date_order IN range</div>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-value loading" id="val-approved">—</div>
+      <div class="kpi-meta" id="meta-approved"></div>
+    </div>
+    <div class="kpi-card" id="card-completed">
+      <div class="kpi-label-row">
+        <span class="kpi-label">Orders Completed</span>
+        <div class="tip-wrap">
+          <span class="tip-icon">?</span>
+          <div class="tip-box">
+            <div class="tip-desc">Orders that have been fully locked and closed in Odoo.</div>
+            <div class="tip-detail"><span class="tip-key">Table: </span>sale.order</div>
+            <div class="tip-detail"><span class="tip-key">Formula: </span>COUNT(id) WHERE state = 'done' AND date_order IN range</div>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-value loading" id="val-completed">—</div>
+      <div class="kpi-meta" id="meta-completed"></div>
+    </div>
+  </div>
+
+  <!-- Orders by Type + Refunds -->
+  <div class="kpi-grid-2">
+    <div class="kpi-card" id="card-bytype">
+      <div class="kpi-label-row">
+        <span class="kpi-label">Orders by Type</span>
+        <div class="tip-wrap">
+          <span class="tip-icon">?</span>
+          <div class="tip-box">
+            <div class="tip-desc">Invoiced orders broken down by customer type — whether the buyer is an Agent, Owner, or Tenant. Only orders with invoice_status = 'invoiced' are included.</div>
+            <div class="tip-detail"><span class="tip-key">Table: </span>sale.order</div>
+            <div class="tip-detail"><span class="tip-key">Formula: </span>COUNT(id) WHERE state IN ('sale','done') AND invoice_status = 'invoiced' AND ordering_as = 'Agent' / 'Owner' / 'Tenant'</div>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-breakdown loading" id="val-bytype">
+        <div class="breakdown-row">
+          <span class="breakdown-label">Agent</span>
+          <span class="breakdown-value" id="type-agent">—</span>
+        </div>
+        <div class="breakdown-row">
+          <span class="breakdown-label">Owner</span>
+          <span class="breakdown-value" id="type-owner">—</span>
+        </div>
+        <div class="breakdown-row">
+          <span class="breakdown-label">Tenant</span>
+          <span class="breakdown-value" id="type-tenant">—</span>
+        </div>
+      </div>
+    </div>
+    <div class="kpi-card" id="card-refunds">
+      <div class="kpi-label-row">
+        <span class="kpi-label">Customer Refunds</span>
+        <div class="tip-wrap">
+          <span class="tip-icon">?</span>
+          <div class="tip-box">
+            <div class="tip-desc">Credit notes issued to customers in the period — used as a proxy for returns and refunds. All values excl. GST.</div>
+            <div class="tip-detail"><span class="tip-key">Table: </span>account.move</div>
+            <div class="tip-detail"><span class="tip-key">Field: </span>amount_untaxed (excl. GST)</div>
+            <div class="tip-detail"><span class="tip-key">Formula: </span>COUNT(id) + SUM(amount_untaxed) WHERE move_type = 'out_refund' AND invoice_date IN range</div>
+          </div>
+        </div>
+      </div>
+      <div class="refund-pair">
+        <div class="refund-item">
+          <span class="refund-sub">Count</span>
+          <span class="refund-val loading" id="refund-count">—</span>
+        </div>
+        <div class="refund-item">
+          <span class="refund-sub">Total Value</span>
+          <span class="refund-val loading" id="refund-value">—</span>
+        </div>
+      </div>
+      <div class="kpi-meta" id="meta-refunds" style="margin-top:14px"></div>
+    </div>
+  </div>
+
+  </div><!-- /.tab-panel.tab-sales -->
+
+  <!-- ── Tab: Fulfilment ── -->
+  <div class="tab-panel tab-fulfilment" style="display:none">
+
+  <div class="section-divider"><span class="section-divider-label">Fulfilment</span></div>
+
+  <div class="active-fulfil-section" id="card-active-fulfil">
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <span class="section-title">Active Order Fulfilment Performance</span>
+        <div class="tip-wrap">
+          <span class="tip-icon">?</span>
+          <div class="tip-box">
+            <div class="tip-desc">Live snapshot of all currently active orders, bucketed by how many days have passed since their Processing Start Date vs. the 10-day target. Not affected by the date range above.</div>
+            <div class="tip-detail"><span class="tip-key">Table: </span>sale.order</div>
+            <div class="tip-detail"><span class="tip-key">Field: </span>processing_start_date (set when WooComm status → Processing)</div>
+            <div class="tip-detail"><span class="tip-key">Formula: </span>days = TODAY − processing_start_date; buckets: ≤10d / 11–17d / 18–24d / 25+d</div>
+          </div>
+        </div>
+      </div>
+      <span class="live-badge">Live · All Active Orders</span>
+    </div>
+    <div class="active-buckets-grid" id="val-active-fulfil">
+      <div class="active-bucket" id="ab-tile-ontrack">
+        <div class="ab-label">On Track</div>
+        <div class="ab-count" id="ab-ontrack-count">—</div>
+        <div class="ab-pct" id="ab-ontrack-pct">—</div>
+        <div class="ab-target">Target ≥ 80%</div>
+      </div>
+      <div class="active-bucket" id="ab-tile-delay1">
+        <div class="ab-label">1–7 Days Late</div>
+        <div class="ab-count" id="ab-delay1-count">—</div>
+        <div class="ab-pct" id="ab-delay1-pct">—</div>
+        <div class="ab-target">Target ≤ 15%</div>
+      </div>
+      <div class="active-bucket" id="ab-tile-delay2">
+        <div class="ab-label">8–14 Days Late</div>
+        <div class="ab-count" id="ab-delay2-count">—</div>
+        <div class="ab-pct" id="ab-delay2-pct">—</div>
+        <div class="ab-target">Target ≤ 5%</div>
+      </div>
+      <div class="active-bucket" id="ab-tile-delay3">
+        <div class="ab-label">14+ Days Late</div>
+        <div class="ab-count" id="ab-delay3-count">—</div>
+        <div class="ab-pct" id="ab-delay3-pct">—</div>
+        <div class="ab-target">Target &lt; 5%</div>
+      </div>
+    </div>
+    <div class="ab-footer" id="ab-footer"></div>
+  </div>
+
+  <!-- Avg Fulfilment + Items Sent -->
+  <div class="kpi-grid-2">
+    <div class="kpi-card" id="card-fulfil">
+      <div class="kpi-label-row">
+        <span class="kpi-label">Avg. Fulfilment Time</span>
+        <div class="tip-wrap">
+          <span class="tip-icon">?</span>
+          <div class="tip-box">
+            <div class="tip-desc">The average number of days between the scheduled delivery date and when it was actually completed.</div>
+            <div class="tip-detail"><span class="tip-key">Table: </span>stock.picking</div>
+            <div class="tip-detail"><span class="tip-key">Formula: </span>AVG(date_done − scheduled_date) WHERE state = 'done'</div>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-value loading" id="val-fulfil">—</div>
+      <div class="kpi-meta" id="meta-fulfil"></div>
+    </div>
+    <div class="kpi-card" id="card-items">
+      <div class="kpi-label-row">
+        <span class="kpi-label">Items Sent</span>
+        <div class="tip-wrap">
+          <span class="tip-icon">?</span>
+          <div class="tip-box">
+            <div class="tip-desc">Total units on invoiced orders in the period, broken down by product type. Only lines from orders with invoice_status = 'invoiced' are included.</div>
+            <div class="tip-detail"><span class="tip-key">Table: </span>sale.order.line</div>
+            <div class="tip-detail"><span class="tip-key">Formula: </span>SUM(product_uom_qty) WHERE order_id.state IN ('sale','done') AND order_id.invoice_status = 'invoiced' AND product name CONTAINS 'key' / 'fob' / 'remote'</div>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-breakdown loading" id="val-items">
+        <div class="breakdown-row">
+          <span class="breakdown-label">Keys</span>
+          <span class="breakdown-value" id="items-keys">—</span>
+        </div>
+        <div class="breakdown-row">
+          <span class="breakdown-label">Fobs</span>
+          <span class="breakdown-value" id="items-fobs">—</span>
+        </div>
+        <div class="breakdown-row">
+          <span class="breakdown-label">Remotes</span>
+          <span class="breakdown-value" id="items-remotes">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 4: Completed Fulfilment Performance (6 tiles) -->
+  <div class="kpi-card" id="card-buckets" style="margin-bottom:16px">
+    <div class="kpi-label-row">
+      <span class="kpi-label">Completed Fulfilment Performance</span>
+      <div class="tip-wrap">
+        <span class="tip-icon">?</span>
+        <div class="tip-box">
+          <div class="tip-desc">Completed deliveries bucketed by how many days they took from scheduled date to actual completion.</div>
+          <div class="tip-detail"><span class="tip-key">Table: </span>stock.picking</div>
+          <div class="tip-detail"><span class="tip-key">Formula: </span>COUNT WHERE (date_done − scheduled_date) &lt;= 3 / &lt;= 10 / &gt; 10 days</div>
+        </div>
+      </div>
+    </div>
+    <div class="fulfil-tiles-grid" id="val-buckets">
+      <div class="fulfil-tile">
+        <a class="ft-label" href="https://www.keyzee.com.au/web#action=1382" target="_blank">Total Completed within 3 Days</a>
+        <div class="ft-value" id="ft-total-3">—</div>
+      </div>
+      <div class="fulfil-tile">
+        <div class="ft-label">Total Completed within 10 Days</div>
+        <div class="ft-value" id="ft-total-10">—</div>
+      </div>
+      <div class="fulfil-tile">
+        <div class="ft-label">Total Completed &gt; 10 Days</div>
+        <div class="ft-value" id="ft-total-over">—</div>
+      </div>
+      <div class="fulfil-tile">
+        <div class="ft-label">% Completed within 3 Days</div>
+        <div class="ft-value" id="ft-pct-3">—</div>
+      </div>
+      <div class="fulfil-tile">
+        <div class="ft-label">% Completed within 10 Days</div>
+        <div class="ft-value" id="ft-pct-10">—</div>
+      </div>
+      <div class="fulfil-tile">
+        <div class="ft-label">% Completed &gt; 10 Days</div>
+        <div class="ft-value" id="ft-pct-over">—</div>
+      </div>
+    </div>
+    <div class="kpi-meta" id="meta-buckets" style="margin-top:16px"></div>
+  </div>
+
+
+  <!-- Fulfilment by Product Type -->
+  <div class="kpi-card" id="card-type-buckets" style="margin-bottom:16px">
+    <div class="kpi-label-row">
+      <span class="kpi-label">Fulfilment Performance by Product Type</span>
+      <div class="tip-wrap">
+        <span class="tip-icon">?</span>
+        <div class="tip-box">
+          <div class="tip-desc">Same fulfilment buckets as above, but filtered to deliveries containing each product type.</div>
+          <div class="tip-detail"><span class="tip-key">Table: </span>stock.picking, stock.move</div>
+          <div class="tip-detail"><span class="tip-key">Filter: </span>move_ids.product_id.name CONTAINS 'key' / 'fob' / 'remote'</div>
+        </div>
+      </div>
+    </div>
+    <div class="type-buckets-grid" id="val-type-buckets">
+      <!-- Keys -->
+      <div class="type-bucket-col">
+        <div class="type-bucket-heading">Keys <span class="type-bucket-total" id="type-total-keys"></span></div>
+        <div class="bucket-row bucket-green">
+          <div class="bucket-header">
+            <span class="bucket-label">Within 3 days</span>
+            <span class="bucket-stat" id="kt-bucket-3">—</span>
+          </div>
+          <div class="bucket-bar-bg"><div class="bucket-bar-fill" id="kt-bar-3" style="width:0%"></div></div>
+        </div>
+        <div class="bucket-row bucket-amber">
+          <div class="bucket-header">
+            <span class="bucket-label">Within 10 days</span>
+            <span class="bucket-stat" id="kt-bucket-10">—</span>
+          </div>
+          <div class="bucket-bar-bg"><div class="bucket-bar-fill" id="kt-bar-10" style="width:0%"></div></div>
+        </div>
+        <div class="bucket-row bucket-red">
+          <div class="bucket-header">
+            <span class="bucket-label">Over 10 days</span>
+            <span class="bucket-stat" id="kt-bucket-over">—</span>
+          </div>
+          <div class="bucket-bar-bg"><div class="bucket-bar-fill" id="kt-bar-over" style="width:0%"></div></div>
+        </div>
+      </div>
+      <!-- Fobs -->
+      <div class="type-bucket-col">
+        <div class="type-bucket-heading">Fobs <span class="type-bucket-total" id="type-total-fobs"></span></div>
+        <div class="bucket-row bucket-green">
+          <div class="bucket-header">
+            <span class="bucket-label">Within 3 days</span>
+            <span class="bucket-stat" id="ft-bucket-3">—</span>
+          </div>
+          <div class="bucket-bar-bg"><div class="bucket-bar-fill" id="ft-bar-3" style="width:0%"></div></div>
+        </div>
+        <div class="bucket-row bucket-amber">
+          <div class="bucket-header">
+            <span class="bucket-label">Within 10 days</span>
+            <span class="bucket-stat" id="ft-bucket-10">—</span>
+          </div>
+          <div class="bucket-bar-bg"><div class="bucket-bar-fill" id="ft-bar-10" style="width:0%"></div></div>
+        </div>
+        <div class="bucket-row bucket-red">
+          <div class="bucket-header">
+            <span class="bucket-label">Over 10 days</span>
+            <span class="bucket-stat" id="ft-bucket-over">—</span>
+          </div>
+          <div class="bucket-bar-bg"><div class="bucket-bar-fill" id="ft-bar-over" style="width:0%"></div></div>
+        </div>
+      </div>
+      <!-- Remotes -->
+      <div class="type-bucket-col">
+        <div class="type-bucket-heading">Remotes <span class="type-bucket-total" id="type-total-remotes"></span></div>
+        <div class="bucket-row bucket-green">
+          <div class="bucket-header">
+            <span class="bucket-label">Within 3 days</span>
+            <span class="bucket-stat" id="rt-bucket-3">—</span>
+          </div>
+          <div class="bucket-bar-bg"><div class="bucket-bar-fill" id="rt-bar-3" style="width:0%"></div></div>
+        </div>
+        <div class="bucket-row bucket-amber">
+          <div class="bucket-header">
+            <span class="bucket-label">Within 10 days</span>
+            <span class="bucket-stat" id="rt-bucket-10">—</span>
+          </div>
+          <div class="bucket-bar-bg"><div class="bucket-bar-fill" id="rt-bar-10" style="width:0%"></div></div>
+        </div>
+        <div class="bucket-row bucket-red">
+          <div class="bucket-header">
+            <span class="bucket-label">Over 10 days</span>
+            <span class="bucket-stat" id="rt-bucket-over">—</span>
+          </div>
+          <div class="bucket-bar-bg"><div class="bucket-bar-fill" id="rt-bar-over" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /.tab-panel.tab-fulfilment -->
+
+  <!-- ── Tab: Sales (Analytics) ── -->
+  <div class="tab-panel tab-sales">
+
+  <div class="section-divider"><span class="section-divider-label">Analytics</span></div>
+
+  <!-- Sales Chart -->
+  <div class="chart-card" id="card-chart" style="margin-bottom:16px">
+    <div class="chart-controls">
+      <div class="kpi-label-row" style="margin-bottom:0">
+        <span class="kpi-label" style="margin-bottom:0">Sales Revenue</span>
+        <div class="tip-wrap">
+          <span class="tip-icon">?</span>
+          <div class="tip-box">
+            <div class="tip-desc">Revenue from invoiced orders, grouped by the chosen period. Use the date presets on the right to independently control the chart range. All values excl. GST. Only orders with invoice_status = 'invoiced' are included.</div>
+            <div class="tip-detail"><span class="tip-key">Table: </span>sale.order</div>
+            <div class="tip-detail"><span class="tip-key">Field: </span>amount_untaxed (excl. GST)</div>
+            <div class="tip-detail"><span class="tip-key">Formula: </span>SUM(amount_untaxed) WHERE invoice_status = 'invoiced' grouped by day / week / month</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div class="chart-toggle-group">
+          <button class="chart-toggle-btn" onclick="setChartPeriod(event, 'day')">Day</button>
+          <button class="chart-toggle-btn" onclick="setChartPeriod(event, 'week')">Week</button>
+          <button class="chart-toggle-btn active" id="chart-period-month" onclick="setChartPeriod(event, 'month')">Month</button>
+        </div>
+        <div class="chart-toggle-group">
+          <button class="chart-preset-btn chart-toggle-btn" onclick="setChartDays(event, 7)">7D</button>
+          <button class="chart-preset-btn chart-toggle-btn" onclick="setChartDays(event, 30)">30D</button>
+          <button class="chart-preset-btn chart-toggle-btn" onclick="setChartDays(event, 90)">90D</button>
+          <button class="chart-preset-btn chart-toggle-btn" onclick="setChartDays(event, 180)">180D</button>
+          <button class="chart-preset-btn chart-toggle-btn active" onclick="setChartDays(event, 365)">1Y</button>
+        </div>
+      </div>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="chart-monthly"></canvas>
+    </div>
+  </div>
+
+  <!-- Top Products & Top Categories -->
+  <div class="kpi-grid-2">
+    <div class="table-card" id="card-products">
+      <div class="kpi-label-row">
+        <span class="kpi-label">Top 10 Products</span>
+        <div class="tip-wrap">
+          <span class="tip-icon">?</span>
+          <div class="tip-box">
+            <div class="tip-desc">The highest-earning products by total revenue from invoiced order lines in the period, excl. GST. Only lines from orders with invoice_status = 'invoiced' are included.</div>
+            <div class="tip-detail"><span class="tip-key">Table: </span>sale.order.line</div>
+            <div class="tip-detail"><span class="tip-key">Field: </span>price_subtotal (excl. GST)</div>
+            <div class="tip-detail"><span class="tip-key">Formula: </span>SUM(price_subtotal) WHERE order_id.invoice_status = 'invoiced' GROUP BY product_id ORDER BY revenue DESC LIMIT 10</div>
+          </div>
+        </div>
+      </div>
+      <div id="val-products"><div class="table-skeleton"><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div></div></div>
+    </div>
+    <div class="table-card" id="card-categories">
+      <div class="kpi-label-row">
+        <span class="kpi-label">Top 10 Categories</span>
+        <div class="tip-wrap">
+          <span class="tip-icon">?</span>
+          <div class="tip-box">
+            <div class="tip-desc">Revenue and order count grouped by product category from invoiced order lines in the period, excl. GST. Only lines from orders with invoice_status = 'invoiced' are included.</div>
+            <div class="tip-detail"><span class="tip-key">Tables: </span>sale.order.line, product.product</div>
+            <div class="tip-detail"><span class="tip-key">Field: </span>price_subtotal (excl. GST)</div>
+            <div class="tip-detail"><span class="tip-key">Formula: </span>SUM(price_subtotal) WHERE order_id.invoice_status = 'invoiced' GROUP BY product_id.categ_id ORDER BY revenue DESC LIMIT 10</div>
+          </div>
+        </div>
+      </div>
+      <div id="val-categories"><div class="table-skeleton"><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div></div></div>
+    </div>
+  </div>
+
+  <!-- Row 6: Top Buildings/OCs & Top Order Reasons -->
+  <div class="kpi-grid-2">
+    <div class="table-card" id="card-vendors">
+      <div class="kpi-label-row">
+        <span class="kpi-label">Top 10 Buildings / OCs</span>
+        <div class="tip-wrap">
+          <span class="tip-icon">?</span>
+          <div class="tip-box">
+            <div class="tip-desc">The customers with the most invoiced orders in the period — typically representing buildings or owners corporation accounts. Only orders with invoice_status = 'invoiced' are included. Revenue excl. GST.</div>
+            <div class="tip-detail"><span class="tip-key">Table: </span>sale.order</div>
+            <div class="tip-detail"><span class="tip-key">Field: </span>amount_untaxed (excl. GST)</div>
+            <div class="tip-detail"><span class="tip-key">Formula: </span>COUNT(id) + SUM(amount_untaxed) WHERE invoice_status = 'invoiced' GROUP BY partner_id ORDER BY order count DESC LIMIT 10</div>
+          </div>
+        </div>
+      </div>
+      <div id="val-vendors"><div class="table-skeleton"><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div></div></div>
+    </div>
+    <div class="table-card" id="card-order-reasons">
+      <div class="kpi-label-row">
+        <span class="kpi-label">Top 10 Order Reasons</span>
+        <div class="tip-wrap">
+          <span class="tip-icon">?</span>
+          <div class="tip-box">
+            <div class="tip-desc">The most common reasons entered on invoiced orders in the period, by order count. Only orders with invoice_status = 'invoiced' are included.</div>
+            <div class="tip-detail"><span class="tip-key">Table: </span>sale.order</div>
+            <div class="tip-detail"><span class="tip-key">Field: </span>reasons_for_order (char)</div>
+            <div class="tip-detail"><span class="tip-key">Filter: </span>state IN ('sale','done') AND invoice_status = 'invoiced'</div>
+          </div>
+        </div>
+      </div>
+      <div id="val-order-reasons"><div class="table-skeleton"><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div></div></div>
+    </div>
+  </div>
+
+  <span class="last-updated" id="last-updated"></span>
+
+  </div><!-- /.tab-panel.tab-sales (analytics) -->
+
+  <!-- ── Tab: Support ── -->
+  <div class="tab-panel tab-support" style="display:none">
+
+  <div class="section-divider"><span class="section-divider-label">Help Desk Overview</span></div>
+
+  <div class="kpi-grid-3">
+    <div class="kpi-card" id="hd-card-total">
+      <div class="kpi-label-row">
+        <span class="kpi-label">Tickets Created</span>
+        <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Total helpdesk tickets created during the selected date range.</div><div class="tip-detail"><span class="tip-key">Source:</span> helpdesk.ticket · create_date</div></div></span>
+      </div>
+      <div class="kpi-value loading" id="hd-total">—</div>
+      <div class="kpi-meta" id="hd-total-meta"></div>
+    </div>
+    <div class="kpi-card" id="hd-card-open">
+      <div class="kpi-label-row">
+        <span class="kpi-label">Open Tickets</span>
+        <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Tickets created in the period that are not in a resolved/closed stage (based on stage name).</div><div class="tip-detail"><span class="tip-key">Source:</span> helpdesk.ticket · stage_id</div></div></span>
+      </div>
+      <div class="kpi-value loading" id="hd-open">—</div>
+      <div class="kpi-meta" id="hd-unassigned"></div>
+    </div>
+    <div class="kpi-card" id="hd-card-sla">
+      <div class="kpi-label-row">
+        <span class="kpi-label">SLA Breaches</span>
+        <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Number of SLA policies that failed (deadline exceeded) for tickets in the selected period.</div><div class="tip-detail"><span class="tip-key">Source:</span> helpdesk.sla.status · status = failed</div></div></span>
+      </div>
+      <div class="kpi-value loading" id="hd-sla">—</div>
+    </div>
+  </div>
+
+  <div class="kpi-grid-3">
+    <div class="kpi-card" id="hd-card-resolved">
+      <div class="kpi-label-row">
+        <span class="kpi-label">Resolved (Period)</span>
+        <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Tickets created in the period that are in a folded (closed) stage in Odoo.</div><div class="tip-detail"><span class="tip-key">Source:</span> helpdesk.ticket · stage_id.fold = true</div></div></span>
+      </div>
+      <div class="kpi-value loading" id="hd-resolved">—</div>
+    </div>
+    <div class="kpi-card" id="hd-card-res-time">
+      <div class="kpi-label-row">
+        <span class="kpi-label">Avg Resolution Time</span>
+        <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Average days from ticket creation to close_date, for tickets resolved within the selected period.</div><div class="tip-detail"><span class="tip-key">Source:</span> helpdesk.ticket · create_date → close_date</div></div></span>
+      </div>
+      <div class="kpi-value loading" id="hd-res-time">—</div>
+    </div>
+    <div class="kpi-card" id="hd-card-csat">
+      <div class="kpi-label-row">
+        <span class="kpi-label">CSAT</span>
+        <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Customer satisfaction — % of ratings that are positive (≥4/5 or ≥5/10 scale) in the period.</div><div class="tip-detail"><span class="tip-key">Source:</span> rating.rating · res_model = helpdesk.ticket</div></div></span>
+      </div>
+      <div class="kpi-value loading" id="hd-csat">—</div>
+      <div class="kpi-meta" id="hd-csat-meta"></div>
+    </div>
+  </div>
+
+  <div class="kpi-grid-2">
+    <div class="kpi-card" id="hd-card-median-age">
+      <div class="kpi-label-row">
+        <span class="kpi-label">Median Open Age</span>
+        <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Median age in days of ALL currently open tickets (across all time, not just the period). Indicates typical backlog health.</div><div class="tip-detail"><span class="tip-key">Source:</span> helpdesk.ticket · active=true, stage not folded</div></div></span>
+      </div>
+      <div class="kpi-value loading" id="hd-median-age">—</div>
+      <div class="kpi-meta">current open queue</div>
+    </div>
+    <div class="kpi-card" id="hd-card-oldest">
+      <div class="kpi-label-row">
+        <span class="kpi-label">Oldest Active Ticket</span>
+        <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Age of the oldest open ticket, excluding tickets in Awaiting Customer or Awaiting 3rd Party stages.</div><div class="tip-detail"><span class="tip-key">Source:</span> helpdesk.ticket · active=true, stage not folded, not awaiting</div></div></span>
+      </div>
+      <div class="kpi-value loading" id="hd-oldest">—</div>
+      <div class="kpi-meta">excl. awaiting stages</div>
+    </div>
+  </div>
+
+  <!-- ── Assignee / Status chart ── -->
+  <div class="section-divider"><span class="section-divider-label">Tickets by Assignee &amp; Status</span></div>
+  <div class="chart-card loaded" id="hd-card-assignee" style="margin-bottom:8px">
+    <div id="hd-stage-filters" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;"></div>
+    <div id="hd-assignee-wrap" style="position:relative; height:220px">
+      <canvas id="hd-assignee-chart"></canvas>
+    </div>
+  </div>
+
+  <!-- ── Volume + charts ── -->
+  <div class="section-divider"><span class="section-divider-label">Analytics</span></div>
+  <div class="chart-card loaded" id="hd-card-volume" style="margin-bottom:16px">
+    <div class="kpi-label-row" style="margin-bottom:12px"><span class="kpi-label">Ticket Volume</span></div>
+    <div style="position:relative; height:180px; width:100%">
+      <canvas id="hd-volume-chart"></canvas>
+    </div>
+  </div>
+
+  <div class="kpi-grid-2">
+    <div class="chart-card" id="hd-card-types">
+      <div class="kpi-label-row" style="margin-bottom:12px">
+        <span class="kpi-label">Top Ticket Types</span>
+        <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Breakdown of tickets by type for the selected period.</div><div class="tip-detail"><span class="tip-key">Source:</span> helpdesk.ticket · ticket_type_id</div></div></span>
+      </div>
+      <div id="hd-types-wrap" style="position:relative; height:200px">
+        <canvas id="hd-types-chart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card" id="hd-card-stages">
+      <div class="kpi-label-row" style="margin-bottom:12px">
+        <span class="kpi-label">Tickets by Stage</span>
+        <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Distribution of tickets across workflow stages for the selected period.</div><div class="tip-detail"><span class="tip-key">Source:</span> helpdesk.ticket · stage_id</div></div></span>
+      </div>
+      <div id="hd-stages-wrap" style="position:relative; height:200px">
+        <canvas id="hd-stages-chart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /.tab-panel.tab-support -->
+
+  <!-- ── Tab: Purchasing ── -->
+  <div class="tab-panel tab-purchasing" style="display:none">
+
+    <div class="section-divider"><span class="section-divider-label">Open Orders <span style="font-size:9px;font-weight:700;letter-spacing:.06em;background:var(--accent);color:#fff;border-radius:4px;padding:2px 6px;margin-left:6px;vertical-align:middle">LIVE</span></span></div>
+
+    <div class="kpi-grid-2">
+      <div class="kpi-card" id="po-card-open">
+        <div class="kpi-label-row">
+          <a class="kpi-label" href="https://keyzee.odoo.com/web#action=1367" target="_blank">Open POs</a>
+          <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Confirmed purchase orders not yet fully received.</div><div class="tip-detail"><span class="tip-key">Source:</span> purchase.order · state=purchase, receipt_status in (pending, partial)</div></div></span>
+        </div>
+        <div class="kpi-value loading" id="po-open">—</div>
+        <div class="kpi-meta">awaiting delivery</div>
+      </div>
+      <div class="kpi-card" id="po-card-rfq">
+        <div class="kpi-label-row">
+          <a class="kpi-label" href="https://keyzee.odoo.com/web#action=1368" target="_blank">Open RFQs</a>
+          <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Requests for quotation not yet confirmed as purchase orders.</div><div class="tip-detail"><span class="tip-key">Source:</span> purchase.order · state in (draft, sent)</div></div></span>
+        </div>
+        <div class="kpi-value loading" id="po-rfq">—</div>
+        <div class="kpi-meta">pending confirmation</div>
+      </div>
+    </div>
+
+    <div class="section-divider"><span class="section-divider-label">Delivery Performance <span style="font-size:9px;font-weight:700;letter-spacing:.06em;background:var(--accent);color:#fff;border-radius:4px;padding:2px 6px;margin-left:6px;vertical-align:middle">LIVE</span></span></div>
+
+    <div class="kpi-grid-3" style="margin-bottom:12px">
+      <div class="kpi-card" id="po-card-ontrack">
+        <div class="kpi-label-row">
+          <a class="kpi-label" href="https://keyzee.odoo.com/web#action=1369" target="_blank">On Track</a>
+          <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Open POs where expected arrival (date_planned) is today or in the future.</div><div class="tip-detail"><span class="tip-key">Source:</span> purchase.order · date_planned &ge; today</div></div></span>
+        </div>
+        <div class="kpi-value loading" id="po-ontrack">—</div>
+        <div class="kpi-meta" id="meta-po-ontrack">of open POs</div>
+      </div>
+      <div class="kpi-card" id="po-card-delayed">
+        <div class="kpi-label-row">
+          <a class="kpi-label" href="https://keyzee.odoo.com/web#action=1370" target="_blank">Delayed</a>
+          <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Open POs where expected arrival (date_planned) has passed.</div><div class="tip-detail"><span class="tip-key">Source:</span> purchase.order · date_planned &lt; today</div></div></span>
+        </div>
+        <div class="kpi-value loading" id="po-delayed">—</div>
+        <div class="kpi-meta" id="meta-po-delayed">of open POs</div>
+      </div>
+      <div class="kpi-card" id="po-card-eta">
+        <div class="kpi-label-row">
+          <a class="kpi-label" href="https://keyzee.odoo.com/web#action=1371" target="_blank">ETA Next 7 Days</a>
+          <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Open POs with expected arrival within the next 7 days.</div><div class="tip-detail"><span class="tip-key">Source:</span> purchase.order · date_planned between today and today+7</div></div></span>
+        </div>
+        <div class="kpi-value loading" id="po-eta">—</div>
+        <div class="kpi-meta">POs arriving soon</div>
+      </div>
+    </div>
+
+    <div class="table-card loaded" id="po-card-eta-table">
+      <div class="kpi-label-row" style="margin-bottom:12px">
+        <span class="kpi-label">POs Arriving in the Next 7 Days</span>
+        <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Purchase orders with an expected arrival date within the next 7 days, sorted by arrival date.</div><div class="tip-detail"><span class="tip-key">Source:</span> purchase.order · date_planned between today and today+7, state = purchase</div></div></span>
+      </div>
+      <table class="rank-table">
+        <thead><tr><th>PO Ref</th><th>Supplier</th><th>Expected Arrival</th><th style="text-align:right">Value (excl. tax)</th></tr></thead>
+        <tbody id="po-eta-table"><tr><td colspan="4" style="text-align:center;color:var(--meta)">Loading…</td></tr></tbody>
+      </table>
+    </div>
+
+  </div><!-- /.tab-panel.tab-purchasing -->
+
+  <!-- ── Tab: OC Performance ── -->
+  <div class="tab-panel tab-oc" style="display:none">
+
+    <div class="section-divider"><span class="section-divider-label">Owners Corporation</span></div>
+
+    <div class="oc-search-wrap">
+      <input type="text" id="oc-search-input" class="oc-search-input"
+        placeholder="Search Owners Corporation name…"
+        autocomplete="off"
+        oninput="ocHandleSearch(this.value)"
+        onfocus="if(this.value) ocHandleSearch(this.value)">
+      <div id="oc-dropdown" class="oc-dropdown" style="display:none"></div>
+    </div>
+
+    <div id="oc-badge" style="display:none">
+      <span class="oc-selected-badge">
+        <span id="oc-badge-name"></span>
+        <button onclick="ocClear()" title="Clear">×</button>
+      </span>
+    </div>
+
+    <div id="oc-placeholder" class="oc-placeholder">Search and select an Owners Corporation above to view performance metrics.</div>
+
+    <div id="oc-metrics" style="display:none">
+
+      <div class="section-divider"><span class="section-divider-label">OC Summary</span></div>
+      <div class="kpi-card" id="oc-report-card" style="margin-bottom:16px">
+        <div class="kpi-label-row">
+          <span class="kpi-label">Performance Report</span>
+          <div class="oc-report-actions">
+            <button class="btn btn-ghost" onclick="ocOpenPromptEditor()">✎ Edit Prompt</button>
+            <button class="btn btn-ghost" id="oc-report-copy" onclick="ocCopyReport()" style="display:none">Copy</button>
+            <button class="btn" id="oc-report-btn" onclick="ocGenerateReport()">Generate Report</button>
+          </div>
+        </div>
+        <div class="oc-report-body" id="oc-report-body">
+          <div class="oc-report-empty">Generate a 2–3 paragraph summary of this OC's performance for the selected period.</div>
+        </div>
+        <div class="oc-report-meta" id="oc-report-meta"></div>
+      </div>
+
+      <div class="section-divider"><span class="section-divider-label">Orders</span></div>
+      <div class="oc-grid-4" style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:16px">
+
+        <div class="kpi-card" id="oc-card-received">
+          <div class="kpi-label-row">
+            <span class="kpi-label">Orders Received</span>
+            <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">All orders placed by this OC in the selected period, regardless of status.</div><div class="tip-detail"><span class="tip-key">Table:</span> sale.order</div><div class="tip-detail"><span class="tip-key">Formula:</span> COUNT where oc_id = OC and date_order in range</div></div></span>
+          </div>
+          <div class="kpi-value" id="oc-received">—</div>
+          <div class="kpi-meta" id="oc-received-meta"></div>
+        </div>
+
+        <div class="kpi-card" id="oc-card-approved">
+          <div class="kpi-label-row">
+            <span class="kpi-label">Orders Approved</span>
+            <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Orders that have been confirmed and are actively being processed (state = Sale).</div><div class="tip-detail"><span class="tip-key">Table:</span> sale.order</div><div class="tip-detail"><span class="tip-key">Formula:</span> COUNT where oc_id = OC and state = 'sale' and date_order in range</div></div></span>
+          </div>
+          <div class="kpi-value" id="oc-approved">—</div>
+          <div class="kpi-meta" id="oc-approved-meta"></div>
+        </div>
+
+        <div class="kpi-card" id="oc-card-completed">
+          <div class="kpi-label-row">
+            <span class="kpi-label">Orders Completed</span>
+            <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Approved orders where all deliveries have been completed or cancelled — nothing left outstanding.</div><div class="tip-detail"><span class="tip-key">Table:</span> sale.order + stock.picking</div><div class="tip-detail"><span class="tip-key">Formula:</span> Approved − orders with any picking still in progress</div></div></span>
+          </div>
+          <div class="kpi-value" id="oc-completed">—</div>
+          <div class="kpi-meta" id="oc-completed-meta"></div>
+        </div>
+
+        <div class="kpi-card" id="oc-card-not-completed">
+          <div class="kpi-label-row">
+            <span class="kpi-label">Open Orders</span>
+            <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Approved orders that have not yet been fully completed — still in progress.</div><div class="tip-detail"><span class="tip-key">Formula:</span> Orders Approved − Orders Completed</div></div></span>
+          </div>
+          <div class="kpi-value" id="oc-not-completed">—</div>
+          <div class="kpi-meta" id="oc-not-completed-meta"></div>
+        </div>
+
+      </div>
+
+      <div class="section-divider"><span class="section-divider-label">Fulfilment &amp; Items</span></div>
+      <div class="oc-grid-3" style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:16px">
+
+        <div class="kpi-card" id="oc-card-fulfilment">
+          <div class="kpi-label-row">
+            <span class="kpi-label">Fulfilment Time</span>
+            <select id="oc-fulfilment-mode" class="oc-select" onchange="ocUpdateFulfilment()">
+              <option value="avg">Average</option>
+              <option value="quickest">Quickest</option>
+              <option value="longest">Longest</option>
+            </select>
+            <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Days from when processing started to when the delivery was marked done. Uses Processing Start Date if set, otherwise falls back to Order Date.</div><div class="tip-detail"><span class="tip-key">Table:</span> sale.order + stock.picking</div><div class="tip-detail"><span class="tip-key">Start:</span> processing_start_date ?? date_order</div><div class="tip-detail"><span class="tip-key">End:</span> stock.picking.date_done (outgoing, state = done)</div><div class="tip-detail"><span class="tip-key">Formula:</span> AVG / MIN / MAX of (date_done − start) in days</div></div></span>
+          </div>
+          <div class="kpi-value" id="oc-fulfilment">—</div>
+          <div class="kpi-meta" id="oc-fulfilment-meta"></div>
+        </div>
+
+        <div class="kpi-card" id="oc-card-items">
+          <div class="kpi-label-row">
+            <span class="kpi-label">Items Sent</span>
+            <span class="oc-total" id="oc-items-total"></span>
+            <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Actual units dispatched to this OC in the period, broken down by product category. Counts done quantity on completed outgoing deliveries.</div><div class="tip-detail"><span class="tip-key">Table:</span> stock.move.line</div><div class="tip-detail"><span class="tip-key">Filter:</span> outgoing picking, state = done, scheduled_date in range</div><div class="tip-detail"><span class="tip-key">Field:</span> quantity (done qty) grouped by product category</div></div></span>
+          </div>
+          <div class="oc-multi-grid">
+            <div class="oc-multi-cell"><div class="kpi-value" id="oc-keys">—</div><div class="kpi-sub">Keys</div></div>
+            <div class="oc-multi-cell"><div class="kpi-value" id="oc-fobs">—</div><div class="kpi-sub">Fobs</div></div>
+            <div class="oc-multi-cell"><div class="kpi-value" id="oc-remotes">—</div><div class="kpi-sub">Remotes</div></div>
+          </div>
+        </div>
+
+        <div class="kpi-card" id="oc-card-orders-by">
+          <div class="kpi-label-row">
+            <span class="kpi-label">Orders By</span>
+            <span class="oc-total" id="oc-orders-by-total"></span>
+            <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">All orders for this OC broken down by who placed them — Agent, Owner, or Tenant.</div><div class="tip-detail"><span class="tip-key">Table:</span> sale.order</div><div class="tip-detail"><span class="tip-key">Formula:</span> COUNT where oc_id = OC and date_order ≥ period start, grouped by ordering_as field</div></div></span>
+          </div>
+          <div class="oc-multi-grid">
+            <div class="oc-multi-cell"><div class="kpi-value" id="oc-agent">—</div><div class="kpi-sub">Agent</div></div>
+            <div class="oc-multi-cell"><div class="kpi-value" id="oc-owner">—</div><div class="kpi-sub">Owner</div></div>
+            <div class="oc-multi-cell"><div class="kpi-value" id="oc-tenant">—</div><div class="kpi-sub">Tenant</div></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="section-divider"><span class="section-divider-label">Fulfilment Breakdown</span></div>
+      <div class="oc-grid-3" style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:4px" id="oc-val-buckets">
+        <div class="kpi-card">
+          <div class="kpi-label-row">
+            <span class="kpi-label">Within 3 Days</span>
+            <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Orders for this OC fulfilled within 3 days of processing start — the fastest delivery tier.</div></div></span>
+          </div>
+          <div class="kpi-value" id="oc-ft-total-3">—</div>
+          <div class="kpi-meta" id="oc-ft-pct-3"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label-row">
+            <span class="kpi-label">Within 10 Days</span>
+            <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Orders fulfilled between 4–10 days of processing start — within the standard delivery window.</div></div></span>
+          </div>
+          <div class="kpi-value" id="oc-ft-total-10">—</div>
+          <div class="kpi-meta" id="oc-ft-pct-10"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label-row">
+            <span class="kpi-label">&gt; 10 Days</span>
+            <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Orders that took more than 10 days to fulfil — outside the standard window and worth investigating.</div></div></span>
+          </div>
+          <div class="kpi-value" id="oc-ft-total-over">—</div>
+          <div class="kpi-meta" id="oc-ft-pct-over"></div>
+        </div>
+      </div>
+      <div class="kpi-meta" id="oc-meta-buckets" style="margin-top:4px;margin-bottom:16px"></div>
+
+      <div class="section-divider"><span class="section-divider-label">Fulfilment Performance by Product Type</span></div>
+      <div class="kpi-card" id="oc-card-type-buckets" style="margin-bottom:16px">
+        <div class="type-buckets-grid">
+          <!-- Keys -->
+          <div class="type-bucket-col">
+            <div class="type-bucket-heading">Keys <span class="type-bucket-total" id="oc-type-total-keys"></span></div>
+            <div class="bucket-row bucket-green">
+              <div class="bucket-header">
+                <span class="bucket-label">Within 3 days</span>
+                <span class="bucket-stat" id="oc-kt-bucket-3">—</span>
+              </div>
+              <div class="bucket-bar-bg"><div class="bucket-bar-fill" id="oc-kt-bar-3" style="width:0%"></div></div>
+            </div>
+            <div class="bucket-row bucket-amber">
+              <div class="bucket-header">
+                <span class="bucket-label">Within 10 days</span>
+                <span class="bucket-stat" id="oc-kt-bucket-10">—</span>
+              </div>
+              <div class="bucket-bar-bg"><div class="bucket-bar-fill" id="oc-kt-bar-10" style="width:0%"></div></div>
+            </div>
+            <div class="bucket-row bucket-red">
+              <div class="bucket-header">
+                <span class="bucket-label">Over 10 days</span>
+                <span class="bucket-stat" id="oc-kt-bucket-over">—</span>
+              </div>
+              <div class="bucket-bar-bg"><div class="bucket-bar-fill" id="oc-kt-bar-over" style="width:0%"></div></div>
+            </div>
+          </div>
+          <!-- Fobs -->
+          <div class="type-bucket-col">
+            <div class="type-bucket-heading">Fobs <span class="type-bucket-total" id="oc-type-total-fobs"></span></div>
+            <div class="bucket-row bucket-green">
+              <div class="bucket-header">
+                <span class="bucket-label">Within 3 days</span>
+                <span class="bucket-stat" id="oc-ft-bucket-3">—</span>
+              </div>
+              <div class="bucket-bar-bg"><div class="bucket-bar-fill" id="oc-ft-bar-3" style="width:0%"></div></div>
+            </div>
+            <div class="bucket-row bucket-amber">
+              <div class="bucket-header">
+                <span class="bucket-label">Within 10 days</span>
+                <span class="bucket-stat" id="oc-ft-bucket-10">—</span>
+              </div>
+              <div class="bucket-bar-bg"><div class="bucket-bar-fill" id="oc-ft-bar-10" style="width:0%"></div></div>
+            </div>
+            <div class="bucket-row bucket-red">
+              <div class="bucket-header">
+                <span class="bucket-label">Over 10 days</span>
+                <span class="bucket-stat" id="oc-ft-bucket-over">—</span>
+              </div>
+              <div class="bucket-bar-bg"><div class="bucket-bar-fill" id="oc-ft-bar-over" style="width:0%"></div></div>
+            </div>
+          </div>
+          <!-- Remotes -->
+          <div class="type-bucket-col">
+            <div class="type-bucket-heading">Remotes <span class="type-bucket-total" id="oc-type-total-remotes"></span></div>
+            <div class="bucket-row bucket-green">
+              <div class="bucket-header">
+                <span class="bucket-label">Within 3 days</span>
+                <span class="bucket-stat" id="oc-rt-bucket-3">—</span>
+              </div>
+              <div class="bucket-bar-bg"><div class="bucket-bar-fill" id="oc-rt-bar-3" style="width:0%"></div></div>
+            </div>
+            <div class="bucket-row bucket-amber">
+              <div class="bucket-header">
+                <span class="bucket-label">Within 10 days</span>
+                <span class="bucket-stat" id="oc-rt-bucket-10">—</span>
+              </div>
+              <div class="bucket-bar-bg"><div class="bucket-bar-fill" id="oc-rt-bar-10" style="width:0%"></div></div>
+            </div>
+            <div class="bucket-row bucket-red">
+              <div class="bucket-header">
+                <span class="bucket-label">Over 10 days</span>
+                <span class="bucket-stat" id="oc-rt-bucket-over">—</span>
+              </div>
+              <div class="bucket-bar-bg"><div class="bucket-bar-fill" id="oc-rt-bar-over" style="width:0%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-divider"><span class="section-divider-label">Support Tickets</span></div>
+      <div class="oc-grid-4" style="display:grid; grid-template-columns:repeat(5,1fr); gap:16px; margin-bottom:16px">
+
+        <div class="kpi-card" id="oc-hd-open-card">
+          <div class="kpi-label-row">
+            <span class="kpi-label">Open</span>
+            <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Helpdesk tickets for this OC that are currently open — created in the selected period and not yet resolved.</div><div class="tip-detail"><span class="tip-key">Source:</span> helpdesk.ticket · partner_id = OC, stage not folded</div></div></span>
+          </div>
+          <div class="kpi-value" id="oc-hd-open">—</div>
+        </div>
+
+        <div class="kpi-card" id="oc-hd-closed-card">
+          <div class="kpi-label-row">
+            <span class="kpi-label">Closed</span>
+            <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Helpdesk tickets for this OC that have been resolved or closed in the selected period.</div><div class="tip-detail"><span class="tip-key">Source:</span> helpdesk.ticket · partner_id = OC, stage.fold = true</div></div></span>
+          </div>
+          <div class="kpi-value" id="oc-hd-closed">—</div>
+        </div>
+
+        <div class="kpi-card" id="oc-hd-respond-card">
+          <div class="kpi-label-row">
+            <span class="kpi-label">Time to Respond</span>
+            <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Average hours from ticket creation to the first agent response, for tickets in the selected period.</div><div class="tip-detail"><span class="tip-key">Source:</span> helpdesk.ticket · create_date → first message from internal user</div></div></span>
+          </div>
+          <div class="kpi-value" id="oc-hd-respond">—</div>
+          <div class="kpi-meta">avg hours</div>
+        </div>
+
+        <div class="kpi-card" id="oc-hd-close-card">
+          <div class="kpi-label-row">
+            <span class="kpi-label">Time to Close</span>
+            <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Average days from ticket creation to close_date, for tickets resolved in the selected period.</div><div class="tip-detail"><span class="tip-key">Source:</span> helpdesk.ticket · create_date → close_date</div></div></span>
+          </div>
+          <div class="kpi-value" id="oc-hd-close">—</div>
+          <div class="kpi-meta">avg days</div>
+        </div>
+
+        <div class="kpi-card" id="oc-hd-rate-card">
+          <div class="kpi-label-row">
+            <span class="kpi-label">Closing Rate</span>
+            <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Percentage of tickets created in the period that have been closed. Closed ÷ (Open + Closed).</div></div></span>
+          </div>
+          <div class="kpi-value" id="oc-hd-rate">—</div>
+        </div>
+
+      </div>
+
+      <div class="section-divider"><span class="section-divider-label">Survey Summary</span></div>
+      <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:16px; margin-bottom:16px">
+
+        <div class="kpi-card" id="oc-survey-sent-card">
+          <div class="kpi-label-row">
+            <span class="kpi-label">Surveys Sent</span>
+            <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Total order experience surveys sent to contacts at this OC in the selected period.</div><div class="tip-detail"><span class="tip-key">Source:</span> survey.user_input · partner linked to OC</div></div></span>
+          </div>
+          <div class="kpi-value" id="oc-survey-sent">—</div>
+        </div>
+
+        <div class="kpi-card" id="oc-survey-completed-card">
+          <div class="kpi-label-row">
+            <span class="kpi-label">Completed</span>
+            <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Surveys where all 6 questions were answered — counted as fully completed responses.</div><div class="tip-detail"><span class="tip-key">Source:</span> survey.user_input · state = done, answer_count = 6</div></div></span>
+          </div>
+          <div class="kpi-value" id="oc-survey-completed">—</div>
+          <div class="kpi-meta">6 answers</div>
+        </div>
+
+        <div class="kpi-card" id="oc-survey-partial-card">
+          <div class="kpi-label-row">
+            <span class="kpi-label">Partial</span>
+            <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Surveys started but not fully completed — between 1 and 5 answers recorded.</div><div class="tip-detail"><span class="tip-key">Source:</span> survey.user_input · 1 ≤ answer_count ≤ 5</div></div></span>
+          </div>
+          <div class="kpi-value" id="oc-survey-partial">—</div>
+          <div class="kpi-meta">1–5 answers</div>
+        </div>
+
+        <div class="kpi-card" id="oc-survey-rate-card">
+          <div class="kpi-label-row">
+            <span class="kpi-label">Response Rate</span>
+            <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Percentage of sent surveys that received at least one answer. (Completed + Partial) ÷ Sent.</div></div></span>
+          </div>
+          <div class="kpi-value" id="oc-survey-rate">—</div>
+        </div>
+
+        <div class="kpi-card" id="oc-survey-nps-card">
+          <div class="kpi-label-row">
+            <span class="kpi-label">NPS Score</span>
+            <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Net Promoter Score for this OC. Calculated as % Promoters (9–10) minus % Detractors (1–6). Ranges from −100 to +100.</div></div></span>
+          </div>
+          <div class="kpi-value" id="oc-survey-nps">—</div>
+          <div class="kpi-meta">-100 to +100</div>
+        </div>
+
+      </div>
+
+    </div><!-- /#oc-metrics -->
+
+  </div><!-- /.tab-panel.tab-oc -->
+
+  <!-- ── Tab: Warehouse ── -->
+  <div class="tab-panel tab-warehouse" style="display:none">
+
+    <div class="section-divider"><span class="section-divider-label">Ready to Pick <span style="font-size:9px;font-weight:700;letter-spacing:.06em;background:var(--accent);color:#fff;border-radius:4px;padding:2px 6px;margin-left:6px;vertical-align:middle">LIVE</span></span></div>
+
+    <div class="kpi-grid-3">
+      <div class="kpi-card" id="wh-card-ready">
+        <div class="kpi-label-row">
+          <a class="kpi-label" href="https://www.keyzee.com.au/web#action=1361" target="_blank">Orders Ready</a>
+          <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Delivery orders with all stock reserved and ready to pick.</div><div class="tip-detail"><span class="tip-key">Source:</span> stock.picking · state=assigned, operation type=Office WH: Delivery Orders</div></div></span>
+        </div>
+        <div class="kpi-value loading" id="wh-ready">—</div>
+        <div class="kpi-meta">awaiting pick &amp; pack</div>
+      </div>
+      <div class="kpi-card" id="wh-card-processing">
+        <div class="kpi-label-row">
+          <a class="kpi-label" href="https://www.keyzee.com.au/web#action=1363" target="_blank">Processing</a>
+          <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Delivery orders assigned and ready, excluding on-hold, cancelled, and other inactive Woo statuses.</div><div class="tip-detail"><span class="tip-key">Source:</span> stock.picking · picking_type_id=2, state=assigned, x_studio_woo_status not in [1,3,5,6,8,9,15]</div></div></span>
+        </div>
+        <div class="kpi-value loading" id="wh-processing">—</div>
+        <div class="kpi-meta">in active processing</div>
+      </div>
+      <div class="kpi-card" id="wh-card-mfg">
+        <div class="kpi-label-row">
+          <a class="kpi-label" href="https://www.keyzee.com.au/web#action=1362" target="_blank">Ready to Manufacture</a>
+          <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Manufacturing orders with all components available, in an active state, excluding on-hold and cancelled Woo statuses.</div><div class="tip-detail"><span class="tip-key">Source:</span> mrp.production · reservation_state=assigned, state in (draft, confirmed, progress, to_close), woo_status_id not in excluded</div></div></span>
+        </div>
+        <div class="kpi-value loading" id="wh-mfg">—</div>
+        <div class="kpi-meta">components available</div>
+      </div>
+    </div>
+
+    <div class="section-divider"><span class="section-divider-label">Median Time to Ready <span style="font-size:9px;font-weight:700;letter-spacing:.06em;background:var(--accent);color:#fff;border-radius:4px;padding:2px 6px;margin-left:6px;vertical-align:middle">LIVE</span></span></div>
+
+    <div class="kpi-grid-2">
+      <div class="kpi-card" id="wh-card-median-delivery">
+        <div class="kpi-label-row">
+          <span class="kpi-label">Delivery Orders</span>
+          <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Median time from order creation to becoming Ready, across current ready delivery orders. Only includes orders stamped since tracking began.</div><div class="tip-detail"><span class="tip-key">Source:</span> stock.picking · x_studio_date_became_ready − create_date</div></div></span>
+        </div>
+        <div class="kpi-value loading" id="wh-median-delivery">—</div>
+        <div class="kpi-meta">median time to ready</div>
+      </div>
+      <div class="kpi-card" id="wh-card-median-mfg">
+        <div class="kpi-label-row">
+          <span class="kpi-label">Manufacturing Orders</span>
+          <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Median time from order creation to becoming Ready, across current ready MOs. Only includes orders stamped since tracking began.</div><div class="tip-detail"><span class="tip-key">Source:</span> mrp.production · x_studio_date_became_ready − create_date</div></div></span>
+        </div>
+        <div class="kpi-value loading" id="wh-median-mfg">—</div>
+        <div class="kpi-meta">median time to ready</div>
+      </div>
+    </div>
+
+    <div class="section-divider"><span class="section-divider-label">Issues <span style="font-size:9px;font-weight:700;letter-spacing:.06em;background:var(--accent);color:#fff;border-radius:4px;padding:2px 6px;margin-left:6px;vertical-align:middle">LIVE</span></span></div>
+
+    <div class="kpi-grid-2">
+      <div class="kpi-card" id="wh-card-stuck">
+        <div class="kpi-label-row">
+          <a class="kpi-label" href="https://www.keyzee.com.au/web#action=1360" target="_blank">Stuck Orders</a>
+          <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Outgoing deliveries with no quantity reserved, not yet done or cancelled.</div><div class="tip-detail"><span class="tip-key">Source:</span> stock.picking · move quantity=0, state not in (done, cancel), type=outgoing</div></div></span>
+        </div>
+        <div class="kpi-value loading" id="wh-stuck">—</div>
+        <div class="kpi-meta">no stock reserved</div>
+      </div>
+    </div>
+
+    <div class="section-divider"><span class="section-divider-label">Stuck Orders — By Age <span style="font-size:9px;font-weight:700;letter-spacing:.06em;background:var(--accent);color:#fff;border-radius:4px;padding:2px 6px;margin-left:6px;vertical-align:middle">LIVE</span></span></div>
+
+    <div class="kpi-grid-3">
+      <div class="kpi-card" id="wh-card-stuck-10">
+        <div class="kpi-label-row">
+          <a class="kpi-label" href="https://www.keyzee.com.au/web#action=1364" target="_blank">≤ 10 Days</a>
+          <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Stuck delivery orders created within the last 10 days — no stock reserved, not yet done or cancelled.</div><div class="tip-detail"><span class="tip-key">Formula:</span> create_date ≥ today − 10d</div></div></span>
+        </div>
+        <div class="kpi-value loading" id="wh-stuck-10">—</div>
+        <div class="kpi-meta">recent</div>
+      </div>
+      <div class="kpi-card" id="wh-card-stuck-1119">
+        <div class="kpi-label-row">
+          <a class="kpi-label" href="https://www.keyzee.com.au/web#action=1365" target="_blank">11–19 Days</a>
+          <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Stuck delivery orders created 11–19 days ago — no stock reserved, not yet done or cancelled.</div><div class="tip-detail"><span class="tip-key">Formula:</span> create_date between today − 20d and today − 10d</div></div></span>
+        </div>
+        <div class="kpi-value loading" id="wh-stuck-1119">—</div>
+        <div class="kpi-meta">aging</div>
+      </div>
+      <div class="kpi-card" id="wh-card-stuck-20">
+        <div class="kpi-label-row">
+          <a class="kpi-label" href="https://www.keyzee.com.au/web#action=1366" target="_blank">20+ Days</a>
+          <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Stuck delivery orders created 20 or more days ago — no stock reserved, not yet done or cancelled.</div><div class="tip-detail"><span class="tip-key">Formula:</span> create_date &lt; today − 20d</div></div></span>
+        </div>
+        <div class="kpi-value loading" id="wh-stuck-20">—</div>
+        <div class="kpi-meta">overdue</div>
+      </div>
+    </div>
+
+    <div class="section-divider"><span class="section-divider-label">Picks Completed — Last 30 Days</span></div>
+
+    <div class="chart-wrap" id="wh-picks-chart-wrap" style="position:relative;height:260px;margin-bottom:24px">
+      <canvas id="wh-picks-chart"></canvas>
+    </div>
+
+  </div><!-- /.tab-panel.tab-warehouse -->
+
+  <!-- ── Tab: NPS ── -->
+  <div class="tab-panel tab-nps" style="display:none">
+
+    <div class="section-divider"><span class="section-divider-label">Order Experience Survey</span></div>
+    <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:16px; margin-bottom:16px">
+      <div class="kpi-card" id="nps-card-sent">
+        <div class="kpi-label-row">
+          <span class="kpi-label">Surveys Sent</span>
+          <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Total order experience surveys sent to customers in the selected period.</div><div class="tip-detail"><span class="tip-key">Source:</span> survey.user_input · create_date in range</div></div></span>
+        </div>
+        <div class="kpi-value" id="nps-sent">—</div>
+      </div>
+      <div class="kpi-card" id="nps-card-completed">
+        <div class="kpi-label-row">
+          <span class="kpi-label">Completed</span>
+          <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Surveys where all 6 questions were answered — counted as fully completed responses.</div><div class="tip-detail"><span class="tip-key">Source:</span> survey.user_input · state = done, answer_count = 6</div></div></span>
+        </div>
+        <div class="kpi-value" id="nps-completed">—</div>
+        <div class="kpi-meta">6 answers</div>
+      </div>
+      <div class="kpi-card" id="nps-card-partial">
+        <div class="kpi-label-row">
+          <span class="kpi-label">Partial</span>
+          <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Surveys started but not fully completed — between 1 and 5 answers recorded.</div><div class="tip-detail"><span class="tip-key">Source:</span> survey.user_input · 1 ≤ answer_count ≤ 5</div></div></span>
+        </div>
+        <div class="kpi-value" id="nps-partial">—</div>
+        <div class="kpi-meta">1–5 answers</div>
+      </div>
+      <div class="kpi-card" id="nps-card-rate">
+        <div class="kpi-label-row">
+          <span class="kpi-label">Response Rate</span>
+          <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Percentage of sent surveys that received at least one answer. (Completed + Partial) ÷ Sent.</div></div></span>
+        </div>
+        <div class="kpi-value" id="nps-rate">—</div>
+      </div>
+      <div class="kpi-card" id="nps-card-score">
+        <div class="kpi-label-row">
+          <span class="kpi-label">NPS Score</span>
+          <span class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box"><div class="tip-desc">Net Promoter Score across all responses in the period. % Promoters (9–10) minus % Detractors (1–6). Ranges from −100 to +100.</div></div></span>
+        </div>
+        <div class="kpi-value" id="nps-score">—</div>
+        <div class="kpi-meta">-100 to +100</div>
+      </div>
+    </div>
+
+    <div class="section-divider"><span class="section-divider-label">NPS Breakdown</span></div>
+    <div class="kpi-card" style="margin-bottom:16px">
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:20px">
+        <div>
+          <div class="kpi-label-row" style="margin-bottom:12px">
+            <span class="kpi-label" style="color:var(--green)">Promoters</span>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">Score 9–10</span>
+          </div>
+          <div class="kpi-value" id="nps-promoters" style="color:var(--green)">—</div>
+          <div class="kpi-meta" id="nps-promoters-pct"></div>
+          <div class="bucket-bar-bg" style="margin-top:10px"><div class="bucket-bar-fill" id="nps-promoters-bar" style="width:0%;background:var(--green)"></div></div>
+        </div>
+        <div>
+          <div class="kpi-label-row" style="margin-bottom:12px">
+            <span class="kpi-label" style="color:var(--amber)">Passives</span>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">Score 7–8</span>
+          </div>
+          <div class="kpi-value" id="nps-passives" style="color:var(--amber)">—</div>
+          <div class="kpi-meta" id="nps-passives-pct"></div>
+          <div class="bucket-bar-bg" style="margin-top:10px"><div class="bucket-bar-fill" id="nps-passives-bar" style="width:0%;background:var(--amber)"></div></div>
+        </div>
+        <div>
+          <div class="kpi-label-row" style="margin-bottom:12px">
+            <span class="kpi-label" style="color:var(--red)">Detractors</span>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">Score 1–6</span>
+          </div>
+          <div class="kpi-value" id="nps-detractors" style="color:var(--red)">—</div>
+          <div class="kpi-meta" id="nps-detractors-pct"></div>
+          <div class="bucket-bar-bg" style="margin-top:10px"><div class="bucket-bar-fill" id="nps-detractors-bar" style="width:0%;background:var(--red)"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider"><span class="section-divider-label">Recent Comments</span></div>
+    <div class="nps-comment-list" id="nps-comments">
+      <div style="font-family:var(--mono);font-size:12px;color:var(--muted)">Loading…</div>
+    </div>
+
+  </div><!-- /.tab-panel.tab-nps -->
+
+</div>
+
+<footer>
+  <a href="https://danielthompson.digital" target="_blank">DanielThompson.Digital</a> · Keyzee Dashboard<br>
+  <a href="mailto:hello@danielthompson.digital">hello@danielthompson.digital</a>
+</footer>
+
+<script>
+let activeTab = 'sales';
+
+// ── Night mode ──
+function toggleNight() {
+  const on = document.body.classList.toggle('night');
+  document.getElementById('night-toggle-btn').textContent = on ? '☀️' : '🌙';
+  localStorage.setItem('kz_night', on ? '1' : '');
+  // Re-render helpdesk charts with correct colours
+  if (helpdeskLoaded && hdLastByAssignee.length) {
+    hdActiveStages = null; // reset so colours rebuild
+    renderAssigneeChart(hdLastByAssignee);
+  }
+  if (hdTypesChart || hdStagesChart) {
+    // Force resize so Chart.js repaints at current size
+    setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 50);
+  }
+}
+
+function switchTab(name) {
+  activeTab = name;
+  localStorage.setItem('kz_tab', name);
+  document.querySelectorAll('.tab-panel').forEach(el => el.style.display = 'none');
+  const panels = document.querySelectorAll('.tab-' + name);
+  panels.forEach(el => {
+    el.style.display = '';
+    el.classList.remove('tab-panel-entering');
+    void el.offsetWidth; // force reflow
+    el.classList.add('tab-panel-entering');
+  });
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.querySelector('.controls').style.display = (name === 'purchasing' || name === 'warehouse') ? 'none' : '';
+  if (name === 'support' && (!helpdeskLoaded || helpdeskStale)) fetchHelpdesk();
+  if (name === 'purchasing' && (!purchasingLoaded || purchasingStale)) fetchPurchasing();
+  if (name === 'oc' && ocSelectedId && (!ocLoaded || ocStale)) fetchOcData();
+  if (name === 'warehouse' && (!warehouseLoaded || warehouseStale)) fetchWarehouse();
+  if (name === 'nps' && (!npsLoaded || npsStale)) fetchNps();
+}
+
+const WORKER_URL = 'https://demo.invalid'; // demo: answered by demo-shim.js
+const LS_KEY = 'kz_dash_token';
+
+let monthlyChart = null;
+let chartPeriod = 'month';
+let chartDays = 365;
+let storedDailySales = [];
+
+let helpdeskChart = null;
+let hdVolumeChart = null;
+let hdTypesChart  = null;
+let hdStagesChart = null;
+let helpdeskLoaded   = false;
+let helpdeskStale    = false;
+let purchasingLoaded = false;
+let purchasingStale  = false;
+let warehouseLoaded  = false;
+let warehouseStale   = false;
+let npsLoaded        = false;
+let npsStale         = false;
+let whPicksChart     = null;
+let whPicksDates     = []; // full YYYY-MM-DD dates, parallel to chart labels
+let hdLastByAssignee = [];
+let hdActiveStages   = null; // null = not yet initialised
+let hdAllStages      = [];
+
+function escapeAttr(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function groupSalesByPeriod(dailySales, period) {
+  if (period === 'day') {
+    return dailySales.map(d => ({ label: d.day, revenue: d.revenue }));
+  }
+  const grouped = {};
+  dailySales.forEach(d => {
+    let key;
+    const parts = d.day.split('-');
+    const date = new Date(Date.UTC(+parts[0], +parts[1] - 1, +parts[2]));
+    if (period === 'week') {
+      const dow = date.getUTCDay();
+      const diff = (dow === 0 ? -6 : 1 - dow);
+      date.setUTCDate(date.getUTCDate() + diff);
+      key = date.toISOString().slice(0, 10);
+    } else {
+      key = d.day.slice(0, 7);
+    }
+    if (!grouped[key]) grouped[key] = 0;
+    grouped[key] += d.revenue;
+  });
+  return Object.entries(grouped)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, revenue]) => ({ label: key, revenue: Math.round(revenue * 100) / 100 }));
+}
+
+function formatChartLabel(label, period) {
+  if (period === 'day' || period === 'week') {
+    const [y, m, d] = label.split('-');
+    return new Date(+y, +m - 1, +d).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
+  } else {
+    const [yr, mo] = label.split('-');
+    return new Date(+yr, +mo - 1, 1).toLocaleDateString('en-AU', { month: 'short', year: '2-digit' });
+  }
+}
+
+function setChartPeriod(e, period) {
+  chartPeriod = period;
+  document.querySelectorAll('.chart-toggle-btn:not(.chart-preset-btn)').forEach(b => b.classList.remove('active'));
+  e.target.classList.add('active');
+  renderMonthlyChart();
+}
+
+function setChartDays(e, days) {
+  chartDays = days;
+  document.querySelectorAll('.chart-preset-btn').forEach(b => b.classList.remove('active'));
+  e.target.classList.add('active');
+  renderMonthlyChart();
+}
+
+function filterDailySalesByDays(dailySales, days) {
+  if (!days) return dailySales;
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+  const cutoffStr = fmtDate(cutoff);
+  return dailySales.filter(d => d.day >= cutoffStr);
+}
+
+function getToken() { return localStorage.getItem(LS_KEY) || ''; }
+
+function showLogin(msg) {
+  document.getElementById('login-overlay').style.display = 'flex';
+  document.getElementById('login-error').textContent = msg || '';
+  document.getElementById('login-password').value = '';
+  setTimeout(() => document.getElementById('login-password').focus(), 50);
+}
+
+function hideLogin() {
+  document.getElementById('login-overlay').style.display = 'none';
+}
+
+async function submitLogin() {
+  const pw = document.getElementById('login-password').value.trim();
+  if (!pw) return;
+  const btn = document.querySelector('.login-btn');
+  const errEl = document.getElementById('login-error');
+  btn.textContent = 'Checking...';
+  btn.disabled = true;
+  errEl.textContent = '';
+  try {
+    const resp = await fetch(`${WORKER_URL}/api/sales?from=2026-01-01&to=2026-01-01`, {
+      headers: { 'X-Dashboard-Token': pw }
+    });
+    if (resp.status === 401) {
+      errEl.textContent = 'Incorrect password.';
+      return;
+    }
+    localStorage.setItem(LS_KEY, pw);
+    hideLogin();
+    fetchData();
+    // fetchData() re-fetches support/OC/NPS itself; the live tabs need a nudge if a 401 left them loading
+    if (activeTab === 'purchasing') fetchPurchasing();
+    if (activeTab === 'warehouse')  fetchWarehouse();
+  } catch (e) {
+    errEl.textContent = 'Connection error. Try again.';
+  } finally {
+    btn.textContent = 'Access Dashboard';
+    btn.disabled = false;
+  }
+}
+
+function fmt(n) {
+  if (n >= 1000000) return '$' + (n/1000000).toFixed(2) + 'M';
+  if (n >= 1000) return '$' + (n/1000).toFixed(1) + 'k';
+  return '$' + n.toFixed(2);
+}
+
+// Local (AU) date, not UTC — toISOString() would give yesterday before ~10am AEST
+function fmtDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function setPreset(e, days) {
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  e.target.classList.add('active');
+  const to = new Date(), from = new Date();
+  from.setDate(from.getDate() - days);
+  document.getElementById('date-to').value = fmtDate(to);
+  document.getElementById('date-from').value = fmtDate(from);
+  fetchData();
+}
+
+
+function defaultDates() {
+  const to = new Date(), from = new Date();
+  from.setDate(from.getDate() - 30);
+  document.getElementById('date-to').value = fmtDate(to);
+  document.getElementById('date-from').value = fmtDate(from);
+}
+
+function pctChange(curr, prev) {
+  if (prev === 0) return null;
+  return ((curr - prev) / prev * 100).toFixed(1);
+}
+
+function renderChange(pct) {
+  if (pct === null) return '<span>No prior data</span>';
+  const cls = pct >= 0 ? 'up' : 'down';
+  const arrow = pct >= 0 ? '↑' : '↓';
+  return `<span class="${cls}">${arrow} ${Math.abs(pct)}%</span> vs prior period`;
+}
+
+function setLoading() {
+  ['val-revenue','val-aov','val-received','val-approved','val-completed','val-fulfil'].forEach(id => {
+    const el = document.getElementById(id);
+    el.textContent = '';
+    el.classList.add('loading');
+  });
+  ['meta-revenue','meta-aov','meta-received','meta-approved','meta-completed','meta-fulfil',
+   'orders-count','meta-buckets','meta-refunds'].forEach(id => {
+    document.getElementById(id).textContent = '';
+  });
+  document.getElementById('val-items').classList.add('loading');
+  document.getElementById('val-bytype').classList.add('loading');
+  ['items-keys','items-fobs','items-remotes','type-agent','type-owner','type-tenant'].forEach(id => {
+    document.getElementById(id).textContent = '—';
+  });
+  ['ft-total-3','ft-total-10','ft-total-over','ft-pct-3','ft-pct-10','ft-pct-over'].forEach(id => {
+    document.getElementById(id).textContent = '—';
+  });
+  ['refund-count','refund-value'].forEach(id => {
+    const el = document.getElementById(id);
+    el.textContent = '';
+    el.classList.add('loading');
+  });
+  document.getElementById('val-products').innerHTML = '<div class="table-skeleton"><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div></div>';
+  document.getElementById('val-categories').innerHTML = '<div class="table-skeleton"><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div></div>';
+  document.getElementById('val-vendors').innerHTML = '<div class="table-skeleton"><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div></div>';
+  document.getElementById('val-order-reasons').innerHTML = '<div class="table-skeleton"><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div><div class="table-skeleton-row"></div></div>';
+  // Reset type-bucket bars
+  ['kt','ft','rt'].forEach(p => {
+    ['bucket-3','bucket-10','bucket-over'].forEach(s => { document.getElementById(`${p}-${s}`).textContent = '—'; });
+    ['bar-3','bar-10','bar-over'].forEach(s => { document.getElementById(`${p}-${s}`).style.width = '0%'; });
+  });
+  ['type-total-keys','type-total-fobs','type-total-remotes'].forEach(id => { document.getElementById(id).textContent = ''; });
+  ['ab-ontrack-count','ab-ontrack-pct','ab-delay1-count','ab-delay1-pct',
+   'ab-delay2-count','ab-delay2-pct','ab-delay3-count','ab-delay3-pct'].forEach(id => {
+    document.getElementById(id).textContent = '—';
+    document.getElementById(id).className = id.endsWith('-pct') ? 'ab-pct' : 'ab-count';
+  });
+  document.getElementById('ab-footer').textContent = '';
+  ['card-revenue','card-aov','card-received','card-approved','card-completed','card-fulfil',
+   'card-items','card-bytype','card-chart','card-buckets','card-refunds',
+   'card-type-buckets','card-products','card-categories','card-vendors','card-order-reasons','card-active-fulfil'].forEach(id => {
+    document.getElementById(id).classList.remove('loaded');
+  });
+}
+
+function renderMonthlyChart(dailySales) {
+  if (dailySales !== undefined) storedDailySales = dailySales || [];
+  const filtered = filterDailySalesByDays(storedDailySales, chartDays);
+  const grouped = groupSalesByPeriod(filtered, chartPeriod);
+  const labels = grouped.map(d => formatChartLabel(d.label, chartPeriod));
+  const values = grouped.map(d => d.revenue);
+
+  if (monthlyChart) {
+    monthlyChart.data.labels = labels;
+    monthlyChart.data.datasets[0].data = values;
+    monthlyChart.update();
+    return;
+  }
+
+  const ctx = document.getElementById('chart-monthly').getContext('2d');
+  monthlyChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: 'rgba(236,125,19,0.25)',
+        borderColor: 'rgba(236,125,19,0.9)',
+        borderWidth: 1,
+        borderRadius: 3,
+        hoverBackgroundColor: 'rgba(236,125,19,0.45)',
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: { label: ctx => ' ' + fmt(ctx.parsed.y) },
+          backgroundColor: '#ffffff',
+          borderColor: '#e8e8e8',
+          borderWidth: 1,
+          titleColor: '#7a7a7a',
+          bodyColor: '#3a3a3a',
+          bodyFont: { family: 'DM Mono', size: 12 },
+          titleFont: { family: 'DM Mono', size: 10 },
+          padding: 10,
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(42,42,50,0.5)', drawBorder: false },
+          ticks: { color: '#7a7a7a', font: { family: 'DM Mono', size: 10 }, maxRotation: 45 },
+          border: { display: false }
+        },
+        y: {
+          grid: { color: 'rgba(42,42,50,0.5)', drawBorder: false },
+          ticks: { color: '#7a7a7a', font: { family: 'DM Mono', size: 10 }, callback: v => fmt(v) },
+          border: { display: false }
+        }
+      }
+    }
+  });
+}
+
+function renderProductsTable(topProducts) {
+  if (!topProducts || topProducts.length === 0) {
+    document.getElementById('val-products').innerHTML = '<div class="table-loading">No data</div>';
+    return;
+  }
+  const rows = topProducts.map((p, i) => `
+    <tr>
+      <td><span class="rank-num">${i+1}.</span> <span class="rank-name" title="${escapeAttr(p.name)}">${p.name}</span></td>
+      <td><span class="rank-rev">${fmt(p.revenue)}</span> <span class="rank-count">(${p.count})</span></td>
+    </tr>`).join('');
+  document.getElementById('val-products').innerHTML = `
+    <table class="rank-table">
+      <thead><tr><th>Product</th><th>Revenue (orders)</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function renderCategoriesTable(topCategories) {
+  if (!topCategories || topCategories.length === 0) {
+    document.getElementById('val-categories').innerHTML = '<div class="table-loading">No data</div>';
+    return;
+  }
+  const rows = topCategories.map((c, i) => `
+    <tr>
+      <td><span class="rank-num">${i+1}.</span> <span class="rank-name" title="${escapeAttr(c.name)}">${c.name}</span></td>
+      <td><span class="rank-rev">${fmt(c.revenue)}</span> <span class="rank-count">(${c.orders})</span></td>
+    </tr>`).join('');
+  document.getElementById('val-categories').innerHTML = `
+    <table class="rank-table">
+      <thead><tr><th>Category</th><th>Revenue (orders)</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function renderOrderReasonsTable(topOrderReasons) {
+  if (!topOrderReasons || topOrderReasons.length === 0) {
+    document.getElementById('val-order-reasons').innerHTML = '<div class="table-loading">No data</div>';
+    return;
+  }
+  const rows = topOrderReasons.map((r, i) => `
+    <tr>
+      <td><span class="rank-num">${i+1}.</span> <span class="rank-name" title="${escapeAttr(r.name)}">${r.name}</span></td>
+      <td><span class="rank-rev">${r.orders}</span> <span class="rank-count">${fmt(r.revenue)}</span></td>
+    </tr>`).join('');
+  document.getElementById('val-order-reasons').innerHTML = `
+    <table class="rank-table">
+      <thead><tr><th>Reason</th><th>Orders (revenue)</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function renderVendorsTable(topVendors) {
+  if (!topVendors || topVendors.length === 0) {
+    document.getElementById('val-vendors').innerHTML = '<div class="table-loading">No data</div>';
+    return;
+  }
+  const rows = topVendors.map((v, i) => `
+    <tr>
+      <td><span class="rank-num">${i+1}.</span> <span class="rank-name" title="${escapeAttr(v.name)}">${v.name}</span></td>
+      <td><span class="rank-rev">${fmt(v.revenue)}</span> <span class="rank-count">(${v.orders})</span></td>
+    </tr>`).join('');
+  document.getElementById('val-vendors').innerHTML = `
+    <table class="rank-table">
+      <thead><tr><th>Customer</th><th>Revenue (orders)</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+async function fetchData() {
+  const errEl = document.getElementById('dash-error');
+  errEl.style.display = 'none';
+  setLoading();
+
+  const dateFrom = document.getElementById('date-from').value;
+  const dateTo   = document.getElementById('date-to').value;
+
+  const controller = new AbortController();
+  const tid = setTimeout(() => controller.abort(), 30000);
+
+  try {
+    const resp = await fetch(`${WORKER_URL}/api/sales?from=${dateFrom}&to=${dateTo}`, {
+      headers: { 'X-Dashboard-Token': getToken() },
+      signal: controller.signal,
+    });
+    if (resp.status === 401) { showLogin('Session expired. Please log in again.'); return; }
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    showCacheStatus(data._cachedAt);
+
+    const { revenue, count, prevRevenue, prevCount,
+            ordersReceived, prevOrdersReceived,
+            ordersApproved, prevOrdersApproved,
+            ordersCompleted, prevOrdersCompleted,
+            fulfilment, fulfilmentByType,
+            itemsSent, ordersByType,
+            dailySales, topProducts, topVendors, refunds,
+            activeOrderFulfilment, topCategories, topOrderReasons } = data;
+
+    const aov = count > 0 ? revenue / count : 0;
+    const prevAov = prevCount > 0 ? prevRevenue / prevCount : 0;
+
+    // Row 1
+    setVal('val-revenue', fmt(revenue));
+    setVal('val-aov', fmt(aov));
+    document.getElementById('meta-revenue').innerHTML = renderChange(pctChange(revenue, prevRevenue));
+    document.getElementById('meta-aov').innerHTML = renderChange(pctChange(aov, prevAov));
+    document.getElementById('orders-count').textContent = `${count} order${count !== 1 ? 's' : ''}`;
+
+    // Row 2
+    setVal('val-received', ordersReceived);
+    setVal('val-approved', ordersApproved);
+    setVal('val-completed', ordersCompleted);
+    document.getElementById('meta-received').innerHTML = renderChange(pctChange(ordersReceived, prevOrdersReceived));
+    document.getElementById('meta-approved').innerHTML = renderChange(pctChange(ordersApproved, prevOrdersApproved));
+    document.getElementById('meta-completed').innerHTML = renderChange(pctChange(ordersCompleted, prevOrdersCompleted));
+
+    // Row 3 — Fulfilment avg
+    const avgDays = fulfilment?.avgDays ?? null;
+    if (avgDays !== null && avgDays !== undefined) {
+      const el = document.getElementById('val-fulfil');
+      el.classList.remove('loading');
+      el.innerHTML = `${Math.abs(avgDays).toFixed(1)}<span class="kpi-suffix">days</span>`;
+      document.getElementById('meta-fulfil').textContent = avgDays < 0
+        ? 'ahead of schedule on avg'
+        : 'after scheduled date on avg';
+    } else {
+      setVal('val-fulfil', 'N/A');
+      document.getElementById('meta-fulfil').textContent = 'no delivery data';
+    }
+
+    // Row 3 — Items Sent
+    document.getElementById('items-keys').textContent = (itemsSent.keys || 0).toLocaleString();
+    document.getElementById('items-fobs').textContent = (itemsSent.fobs || 0).toLocaleString();
+    document.getElementById('items-remotes').textContent = (itemsSent.remotes || 0).toLocaleString();
+    document.getElementById('val-items').classList.remove('loading');
+
+    // Row 3 — Orders by Type
+    document.getElementById('type-agent').textContent = (ordersByType.agent || 0).toLocaleString();
+    document.getElementById('type-owner').textContent = (ordersByType.owner || 0).toLocaleString();
+    document.getElementById('type-tenant').textContent = (ordersByType.tenant || 0).toLocaleString();
+    document.getElementById('val-bytype').classList.remove('loading');
+
+    // Sales Chart
+    renderMonthlyChart(dailySales || []);
+    document.getElementById('card-chart').classList.add('loaded');
+
+    // Fulfilment buckets — 6-tile display
+    if (fulfilment && fulfilment.total > 0) {
+      document.getElementById('ft-total-3').textContent = fulfilment.within3.toLocaleString();
+      document.getElementById('ft-total-10').textContent = fulfilment.within10.toLocaleString();
+      document.getElementById('ft-total-over').textContent = fulfilment.over10.toLocaleString();
+      document.getElementById('ft-pct-3').textContent = fulfilment.within3Pct + '%';
+      document.getElementById('ft-pct-10').textContent = fulfilment.within10Pct + '%';
+      document.getElementById('ft-pct-over').textContent = fulfilment.over10Pct + '%';
+      document.getElementById('meta-buckets').textContent = `${fulfilment.total} completed orders`;
+    } else {
+      ['ft-total-3','ft-total-10','ft-total-over','ft-pct-3','ft-pct-10','ft-pct-over'].forEach(id => {
+        document.getElementById(id).textContent = '—';
+      });
+      document.getElementById('meta-buckets').textContent = 'no delivery data';
+    }
+
+    // Refunds
+    if (refunds) {
+      const rcEl = document.getElementById('refund-count');
+      rcEl.classList.remove('loading');
+      rcEl.textContent = refunds.count;
+      const rvEl = document.getElementById('refund-value');
+      rvEl.classList.remove('loading');
+      rvEl.textContent = fmt(refunds.value || 0);
+    } else {
+      ['refund-count','refund-value'].forEach(id => {
+        const el = document.getElementById(id);
+        el.classList.remove('loading');
+        el.textContent = '—';
+      });
+    }
+
+    // Fulfilment by product type
+    function renderTypeBuckets(prefix, d, totalEl) {
+      if (!d || d.total === 0) {
+        ['bucket-3','bucket-10','bucket-over'].forEach(s => { document.getElementById(`${prefix}-${s}`).textContent = '—'; });
+        return;
+      }
+      document.getElementById(`${prefix}-bucket-3`).textContent = `${d.within3} (${d.within3Pct}%)`;
+      document.getElementById(`${prefix}-bucket-10`).textContent = `${d.within10} (${d.within10Pct}%)`;
+      document.getElementById(`${prefix}-bucket-over`).textContent = `${d.over10} (${d.over10Pct}%)`;
+      document.getElementById(`${prefix}-bar-3`).style.width = d.within3Pct + '%';
+      document.getElementById(`${prefix}-bar-10`).style.width = d.within10Pct + '%';
+      document.getElementById(`${prefix}-bar-over`).style.width = d.over10Pct + '%';
+      document.getElementById(totalEl).textContent = `(${d.total})`;
+    }
+    if (fulfilmentByType) {
+      renderTypeBuckets('kt', fulfilmentByType.keys, 'type-total-keys');
+      renderTypeBuckets('ft', fulfilmentByType.fobs, 'type-total-fobs');
+      renderTypeBuckets('rt', fulfilmentByType.remotes, 'type-total-remotes');
+    }
+    document.getElementById('card-type-buckets').classList.add('loaded');
+
+    // Active Order Fulfilment
+    if (activeOrderFulfilment && activeOrderFulfilment.total > 0) {
+      const af = activeOrderFulfilment;
+      const urls = af.drilldownUrls || {};
+
+      document.getElementById('ab-ontrack-count').textContent = af.onTrack;
+      const onTrackEl = document.getElementById('ab-ontrack-pct');
+      onTrackEl.textContent = af.onTrackPct + '%';
+      onTrackEl.className = 'ab-pct ' + (af.onTrackPct >= 80 ? 'good' : 'bad');
+
+      document.getElementById('ab-delay1-count').textContent = af.delay1_7;
+      const d1El = document.getElementById('ab-delay1-pct');
+      d1El.textContent = af.delay1_7Pct + '%';
+      d1El.className = 'ab-pct ' + (af.delay1_7Pct <= 15 ? 'good' : 'bad');
+
+      document.getElementById('ab-delay2-count').textContent = af.delay8_14;
+      const d2El = document.getElementById('ab-delay2-pct');
+      d2El.textContent = af.delay8_14Pct + '%';
+      d2El.className = 'ab-pct ' + (af.delay8_14Pct <= 5 ? 'good' : 'bad');
+
+      document.getElementById('ab-delay3-count').textContent = af.delay14plus;
+      const d3El = document.getElementById('ab-delay3-pct');
+      d3El.textContent = af.delay14plusPct + '%';
+      d3El.className = 'ab-pct ' + (af.delay14plusPct < 5 ? 'good' : 'bad');
+
+      // Wire drilldown links — click opens Odoo filtered to that bucket (static Window Actions)
+      [
+        ['ab-tile-ontrack',  'https://www.keyzee.com.au/web#action=1413'],
+        ['ab-tile-delay1',   'https://www.keyzee.com.au/web#action=1415'],
+        ['ab-tile-delay2',   'https://www.keyzee.com.au/web#action=1416'],
+        ['ab-tile-delay3',   'https://www.keyzee.com.au/web#action=1417'],
+      ].forEach(([id, url]) => {
+        const el = document.getElementById(id);
+        if (url) el.onclick = () => window.open(url, '_blank');
+      });
+
+      document.getElementById('ab-footer').textContent = `${af.total} active order${af.total !== 1 ? 's' : ''} in processing · click a tile to view in Odoo`;
+    } else {
+      document.getElementById('ab-footer').textContent = activeOrderFulfilment ? 'No active orders in processing' : 'No data';
+    }
+
+    // Tables
+    renderProductsTable(topProducts || []);
+    renderCategoriesTable(topCategories || []);
+    renderVendorsTable(topVendors || []);
+    renderOrderReasonsTable(topOrderReasons || []);
+
+    // Mark all loaded
+    ['card-revenue','card-aov','card-received','card-approved','card-completed','card-fulfil',
+     'card-items','card-bytype','card-buckets','card-refunds',
+     'card-type-buckets','card-products','card-categories','card-vendors','card-order-reasons','card-active-fulfil'].forEach(id => {
+      document.getElementById(id).classList.add('loaded');
+    });
+
+    document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+
+  } catch (e) {
+    errEl.textContent = 'Error: ' + (e.name === 'AbortError' ? 'Request timed out — try again.' : e.message);
+    errEl.style.display = 'block';
+    ['val-revenue','val-aov','val-received','val-approved','val-completed','val-fulfil'].forEach(id => {
+      const el = document.getElementById(id);
+      el.classList.remove('loading');
+      el.textContent = '—';
+    });
+    ['refund-count','refund-value'].forEach(id => {
+      const el = document.getElementById(id);
+      el.classList.remove('loading');
+      el.textContent = '—';
+    });
+    document.getElementById('val-items').classList.remove('loading');
+    document.getElementById('val-bytype').classList.remove('loading');
+    ['val-products','val-categories','val-vendors','val-order-reasons'].forEach(id => {
+      document.getElementById(id).innerHTML = '<div class="table-loading">Failed to load</div>';
+    });
+  } finally {
+    clearTimeout(tid);
+  }
+  helpdeskStale   = true;
+  purchasingStale = true;
+  ocStale         = true;
+  npsStale        = true;
+  if (activeTab === 'support') fetchHelpdesk();
+  if (activeTab === 'oc' && ocSelectedId) fetchOcData();
+  if (activeTab === 'nps') fetchNps();
+}
+
+function setVal(id, value) {
+  const el = document.getElementById(id);
+  el.classList.remove('loading');
+  el.textContent = value;
+}
+
+function setValLoading(id) {
+  const el = document.getElementById(id);
+  if (el) { el.classList.add('loading'); el.textContent = ''; }
+}
+
+// ── Helpdesk ──────────────────────────────────────────────────────────────
+
+function stageColor(name) {
+  const n = (name || '').toLowerCase();
+  if (n.includes('new'))                                       return 'rgba(59,130,246,0.8)';
+  if (n.includes('progress') || n.includes('working'))        return 'rgba(236,125,19,0.8)';
+  if (n.includes('pending') || n.includes('action'))          return 'rgba(217,119,6,0.8)';
+  if (n.includes('wait') || n.includes('customer') || n.includes('hold')) return 'rgba(249,168,85,0.8)';
+  if (n.includes('done') || n.includes('resolv') || n.includes('clos') || n.includes('complet')) return 'rgba(22,163,74,0.8)';
+  if (n.includes('cancel'))                                   return 'rgba(156,163,175,0.8)';
+  return 'rgba(107,114,128,0.6)';
+}
+
+async function fetchHelpdesk() {
+  const from  = document.getElementById('date-from').value;
+  const to    = document.getElementById('date-to').value;
+  if (!from || !to) return;
+
+  const hdCards = ['hd-card-total','hd-card-open','hd-card-sla','hd-card-resolved','hd-card-res-time','hd-card-csat','hd-card-median-age','hd-card-oldest'];
+  hdCards.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('loaded');
+  });
+  ['hd-total','hd-open','hd-sla','hd-resolved','hd-res-time','hd-csat','hd-median-age','hd-oldest'].forEach(setValLoading);
+
+  try {
+    const resp = await fetch(`${WORKER_URL}/api/helpdesk?from=${from}&to=${to}`, {
+      headers: { 'X-Dashboard-Token': getToken() },
+    });
+    if (resp.status === 401) { showLogin('Session expired. Please log in again.'); return; }
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    renderHelpdesk(data);
+    showCacheStatus(data._cachedAt);
+    helpdeskLoaded = true;
+    helpdeskStale  = false;
+  } catch (e) {
+    ['hd-total','hd-open','hd-sla','hd-resolved','hd-res-time','hd-csat','hd-median-age','hd-oldest'].forEach(id => setVal(id, '—'));
+  }
+}
+
+async function fetchPurchasing() {
+  const poCards = ['po-card-open','po-card-rfq','po-card-ontrack','po-card-delayed','po-card-eta'];
+  poCards.forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('loaded'); });
+  ['po-open','po-rfq','po-ontrack','po-delayed','po-eta'].forEach(setValLoading);
+  const tbody = document.getElementById('po-eta-table');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--meta)">Loading…</td></tr>';
+
+  try {
+    const resp = await fetch(`${WORKER_URL}/api/purchasing`, {
+      headers: { 'X-Dashboard-Token': getToken() },
+    });
+    if (resp.status === 401) { showLogin('Session expired. Please log in again.'); return; }
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    renderPurchasing(data);
+    showCacheStatus(data._cachedAt);
+    purchasingLoaded = true;
+    purchasingStale  = false;
+  } catch (e) {
+    ['po-open','po-rfq','po-ontrack','po-delayed','po-eta'].forEach(id => setVal(id, '—'));
+    const tbody = document.getElementById('po-eta-table');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--meta)">Failed to load</td></tr>';
+  }
+}
+
+function renderPurchasing(data) {
+  const poCards = ['po-card-open','po-card-rfq','po-card-ontrack','po-card-delayed','po-card-eta'];
+  poCards.forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('loaded'); });
+
+  setVal('po-open', data.openPo ?? '—');
+  setVal('po-rfq',  data.openRfq ?? '—');
+
+  const onTrackEl = document.getElementById('po-ontrack');
+  if (onTrackEl) {
+    onTrackEl.classList.remove('loading');
+    onTrackEl.innerHTML = data.onTrackPct !== null && data.onTrackPct !== undefined
+      ? `${data.onTrackPct}<span class="kpi-suffix">%</span>` : '—';
+  }
+  const onTrackMeta = document.getElementById('meta-po-ontrack');
+  if (onTrackMeta) onTrackMeta.textContent = data.onTrack != null ? `${data.onTrack} of ${data.openPo} POs` : 'of open POs';
+
+  const delayedEl = document.getElementById('po-delayed');
+  if (delayedEl) {
+    delayedEl.classList.remove('loading');
+    delayedEl.innerHTML = data.delayedPct !== null && data.delayedPct !== undefined
+      ? `${data.delayedPct}<span class="kpi-suffix">%</span>` : '—';
+  }
+  const delayedMeta = document.getElementById('meta-po-delayed');
+  if (delayedMeta) delayedMeta.textContent = data.delayed != null ? `${data.delayed} of ${data.openPo} POs` : 'of open POs';
+
+  setVal('po-eta', data.etaSoon ?? '—');
+
+  const tbody = document.getElementById('po-eta-table');
+  if (tbody) {
+    const rows = (data.etaSoonPos || []);
+    tbody.innerHTML = rows.length
+      ? rows.map(po => `<tr>
+          <td>${po.name}</td>
+          <td>${po.supplier}</td>
+          <td>${po.date}</td>
+          <td style="text-align:right">${po.amount > 0 ? '$' + po.amount.toLocaleString('en-AU', {minimumFractionDigits:2, maximumFractionDigits:2}) : '—'}</td>
+        </tr>`).join('')
+      : '<tr><td colspan="4" style="text-align:center;color:var(--meta)">No POs arriving in the next 7 days</td></tr>';
+  }
+}
+
+function fmtHours(h) {
+  if (h === null || h === undefined) return '—';
+  if (h < 1) return '< 1h';
+  if (h < 24) return Math.round(h) + 'h';
+  return (h / 24).toFixed(1) + 'd';
+}
+
+async function fetchWarehouse() {
+  ['wh-card-ready', 'wh-card-mfg', 'wh-card-stuck', 'wh-card-median-delivery', 'wh-card-median-mfg'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.classList.remove('loaded');
+  });
+  ['wh-ready','wh-processing','wh-mfg','wh-stuck','wh-stuck-10','wh-stuck-1119','wh-stuck-20','wh-median-delivery','wh-median-mfg'].forEach(setValLoading);
+
+  try {
+    const resp = await fetch(`${WORKER_URL}/api/warehouse`, {
+      headers: { 'X-Dashboard-Token': getToken() },
+    });
+    if (resp.status === 401) { showLogin('Session expired. Please log in again.'); return; }
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    renderWarehouse(data);
+    showCacheStatus(data._cachedAt);
+    warehouseLoaded = true;
+    warehouseStale  = false;
+  } catch (e) {
+    ['wh-ready','wh-processing','wh-mfg','wh-stuck','wh-stuck-10','wh-stuck-1119','wh-stuck-20','wh-median-delivery','wh-median-mfg'].forEach(id => setVal(id, '—'));
+  }
+}
+
+function renderWarehouse(data) {
+  ['wh-card-ready', 'wh-card-processing', 'wh-card-mfg', 'wh-card-stuck', 'wh-card-stuck-10', 'wh-card-stuck-1119', 'wh-card-stuck-20', 'wh-card-median-delivery', 'wh-card-median-mfg'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.classList.add('loaded');
+  });
+  setVal('wh-ready', data.ordersReady ?? '—');
+  setVal('wh-processing', data.processingOrders ?? '—');
+  setVal('wh-mfg', data.readyToManufacture ?? '—');
+  setVal('wh-stuck', data.stuckOrders ?? '—');
+  setVal('wh-stuck-10',   data.stuckUnder10 ?? '—');
+  setVal('wh-stuck-1119', data.stuck1119    ?? '—');
+  setVal('wh-stuck-20',   data.stuckOver20  ?? '—');
+  setVal('wh-median-delivery', fmtHours(data.medianDeliveryHours));
+  setVal('wh-median-mfg', fmtHours(data.medianMfgHours));
+
+  whPicksDates = (data.dailyPicked || []).map(d => d.day); // YYYY-MM-DD, for tooltip DOW
+  const labels = whPicksDates.map(d => d.slice(5)); // MM-DD
+  const values = (data.dailyPicked || []).map(d => d.count);
+  if (whPicksChart) {
+    whPicksChart.data.labels = labels;
+    whPicksChart.data.datasets[0].data = values;
+    whPicksChart.update();
+  } else {
+    const ctx = document.getElementById('wh-picks-chart');
+    if (ctx) whPicksChart = new Chart(ctx.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: 'rgba(236,125,19,0.25)',
+          borderColor: 'rgba(236,125,19,0.9)',
+          borderWidth: 1,
+          borderRadius: 3,
+          hoverBackgroundColor: 'rgba(236,125,19,0.45)',
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: items => {
+                const dow = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+                const full = whPicksDates[items[0].dataIndex];
+                if (!full) return items[0].label;
+                const [y, m, d] = full.split('-').map(Number);
+                return dow[new Date(y, m - 1, d).getDay()] + ', ' + items[0].label;
+              },
+              label: ctx => ' ' + ctx.parsed.y + ' picks',
+            },
+            backgroundColor: '#ffffff',
+            borderColor: '#e8e8e8',
+            borderWidth: 1,
+            titleColor: '#7a7a7a',
+            bodyColor: '#3a3a3a',
+            bodyFont: { family: 'DM Mono', size: 12 },
+            titleFont: { family: 'DM Mono', size: 10 },
+            padding: 10,
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(42,42,50,0.5)', drawBorder: false },
+            ticks: { color: '#7a7a7a', font: { family: 'DM Mono', size: 10 }, maxRotation: 45 },
+            border: { display: false }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(42,42,50,0.5)', drawBorder: false },
+            ticks: { color: '#7a7a7a', font: { family: 'DM Mono', size: 10 }, stepSize: 1 },
+            border: { display: false }
+          }
+        }
+      }
+    });
+  }
+}
+
+function renderHelpdesk(d) {
+  // KPI cards
+  setVal('hd-total', d.totalTickets.toLocaleString());
+  const chg = d.prevTotalTickets
+    ? Math.round((d.totalTickets - d.prevTotalTickets) / d.prevTotalTickets * 100) : null;
+  document.getElementById('hd-total-meta').innerHTML = chg !== null
+    ? `<span class="ab-pct ${chg >= 0 ? 'bad' : 'good'}">${chg >= 0 ? '▲' : '▼'} ${Math.abs(chg)}%</span> vs prior period`
+    : '';
+
+  setVal('hd-open', d.openTickets.toLocaleString());
+  document.getElementById('hd-unassigned').textContent = d.unassigned > 0 ? `${d.unassigned} unassigned` : '';
+
+  setVal('hd-sla', d.slaBreaches.toLocaleString());
+  setVal('hd-resolved', d.resolvedTickets.toLocaleString());
+  setVal('hd-res-time', d.avgResolutionDays !== null ? `${d.avgResolutionDays}d` : '—');
+
+  if (d.csat.pct !== null) {
+    setVal('hd-csat', `${d.csat.pct}%`);
+    document.getElementById('hd-csat-meta').textContent = `${d.csat.responses} response${d.csat.responses !== 1 ? 's' : ''}`;
+  } else {
+    setVal('hd-csat', '—');
+    document.getElementById('hd-csat-meta').textContent = 'No ratings in period';
+  }
+
+  setVal('hd-median-age', d.medianOpenAgeDays !== null ? `${d.medianOpenAgeDays}d` : '—');
+  setVal('hd-oldest',     d.oldestActiveDays  !== null ? `${d.oldestActiveDays}d`  : '—');
+
+  const hdCards = ['hd-card-total','hd-card-open','hd-card-sla','hd-card-resolved','hd-card-res-time','hd-card-csat','hd-card-median-age','hd-card-oldest'];
+  hdCards.forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('loaded'); });
+
+  renderAssigneeChart(d.byAssignee);
+  renderHdVolumeChart(d.dailyVolume);
+  hdTypesChart  = renderHdBarChart('hd-types-chart',  hdTypesChart,  d.byType,  'Tickets');
+  hdStagesChart = renderHdBarChart('hd-stages-chart', hdStagesChart, d.byStage, 'Tickets');
+  // Force Chart.js to re-evaluate widths after DOM has fully painted
+  setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
+}
+
+function renderAssigneeChart(byAssignee) {
+  hdLastByAssignee = byAssignee;
+
+  const wrap = document.getElementById('hd-assignee-wrap');
+  wrap.style.height = Math.max(220, byAssignee.length * 44 + 60) + 'px';
+
+  // Collect all stage names present in this dataset
+  const stageSet = new Set();
+  byAssignee.forEach(a => Object.keys(a.stages).forEach(s => stageSet.add(s)));
+  hdAllStages = [...stageSet];
+
+  // Initialise filter on first call — default ON for New, Waiting On Customer, Solved-like stages
+  if (hdActiveStages === null) {
+    const defaultOn = /\bnew\b|waiting.*(customer)|solved|resolved|done/i;
+    hdActiveStages = {};
+    hdAllStages.forEach(s => { hdActiveStages[s] = defaultOn.test(s); });
+    // If nothing matched defaults, enable all so chart isn't empty
+    if (hdAllStages.length > 0 && hdAllStages.every(s => !hdActiveStages[s])) {
+      hdAllStages.forEach(s => { hdActiveStages[s] = true; });
+    }
+  } else {
+    // Add any newly seen stages (default off for stages that appear mid-session)
+    hdAllStages.forEach(s => { if (!(s in hdActiveStages)) hdActiveStages[s] = false; });
+  }
+
+  // Rebuild filter pill UI
+  const filterEl = document.getElementById('hd-stage-filters');
+  filterEl.innerHTML = hdAllStages.map((s, idx) => `
+    <label class="stage-filter-label">
+      <input type="checkbox" data-idx="${idx}" onchange="hdToggleStage(this)" ${hdActiveStages[s] ? 'checked' : ''}>
+      <span style="color:${stageColor(s)}">${escapeAttr(s)}</span>
+    </label>`).join('');
+
+  const activeStages = hdAllStages.filter(s => hdActiveStages[s]);
+  const labels       = byAssignee.map(a => a.name);
+  const datasets     = activeStages.map(stage => ({
+    label: stage,
+    data: byAssignee.map(a => a.stages[stage] || 0),
+    backgroundColor: stageColor(stage),
+    borderRadius: 2,
+  }));
+
+  if (helpdeskChart) helpdeskChart.destroy();
+  helpdeskChart = new Chart(
+    document.getElementById('hd-assignee-chart').getContext('2d'),
+    {
+      type: 'bar',
+      data: { labels, datasets },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top', labels: { color: '#7a7a7a', font: { family: 'DM Mono', size: 11 }, boxWidth: 12 } },
+          tooltip: { backgroundColor: '#ffffff', borderColor: '#e8e8e8', borderWidth: 1, titleColor: '#7a7a7a', bodyColor: '#3a3a3a' },
+        },
+        scales: {
+          x: { stacked: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#7a7a7a', font: { family: 'DM Mono', size: 10 } } },
+          y: { stacked: true, ticks: { color: '#3a3a3a', font: { family: 'DM Mono', size: 11 } } },
+        },
+      },
+    }
+  );
+}
+
+function hdToggleStage(cb) {
+  const stage = hdAllStages[parseInt(cb.dataset.idx)];
+  if (stage !== undefined) {
+    hdActiveStages[stage] = cb.checked;
+    renderAssigneeChart(hdLastByAssignee);
+  }
+}
+
+function renderHdVolumeChart(dailyVolume) {
+  if (hdVolumeChart) hdVolumeChart.destroy();
+  hdVolumeChart = new Chart(
+    document.getElementById('hd-volume-chart').getContext('2d'),
+    {
+      type: 'bar',
+      data: {
+        labels: dailyVolume.map(d => d.day),
+        datasets: [{
+          label: 'Tickets',
+          data: dailyVolume.map(d => d.count),
+          backgroundColor: 'rgba(236,125,19,0.25)',
+          borderColor: 'rgba(236,125,19,0.9)',
+          borderWidth: 1,
+          borderRadius: 2,
+          hoverBackgroundColor: 'rgba(236,125,19,0.45)',
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { backgroundColor: '#ffffff', borderColor: '#e8e8e8', borderWidth: 1, titleColor: '#7a7a7a', bodyColor: '#3a3a3a' },
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: '#7a7a7a', font: { family: 'DM Mono', size: 10 }, maxRotation: 45 } },
+          y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#7a7a7a', font: { family: 'DM Mono', size: 10 }, stepSize: 1 } },
+        },
+      },
+    }
+  );
+}
+
+function renderHdBarChart(canvasId, existingChart, items, datasetLabel) {
+  if (existingChart) existingChart.destroy();
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || !items || items.length === 0) return null;
+  // Resize the fixed-height wrapper div (not the card) to prevent Chart.js growth loop
+  const wrapId = canvasId.replace('-chart', '-wrap');
+  const wrap = document.getElementById(wrapId);
+  if (wrap) wrap.style.height = Math.max(180, items.length * 34 + 40) + 'px';
+  return new Chart(canvas.getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: items.map(i => i.name),
+      datasets: [{
+        label: datasetLabel,
+        data: items.map(i => i.count),
+        backgroundColor: 'rgba(236,125,19,0.25)',
+        borderColor: 'rgba(236,125,19,0.9)',
+        borderWidth: 1,
+        borderRadius: 2,
+        hoverBackgroundColor: 'rgba(236,125,19,0.45)',
+      }],
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { backgroundColor: '#ffffff', borderColor: '#e8e8e8', borderWidth: 1, titleColor: '#7a7a7a', bodyColor: '#3a3a3a' },
+      },
+      scales: {
+        x: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#7a7a7a', font: { family: 'DM Mono', size: 10 }, stepSize: 1 } },
+        y: { ticks: { color: '#3a3a3a', font: { family: 'DM Mono', size: 11 } } },
+      },
+    },
+  });
+}
+
+// ── OC Performance ──
+let ocSelectedId   = null;
+let ocSelectedName = '';
+let ocLastData     = null;
+let ocLoaded       = false;
+let ocStale        = false;
+let ocSearchTimer  = null;
+let ocLastRange    = null; // date range ocLastData was fetched for
+
+function ocHandleSearch(q) {
+  const dd = document.getElementById('oc-dropdown');
+  dd.style.display = 'none';
+  clearTimeout(ocSearchTimer);
+  if (!q.trim()) return;
+  ocSearchTimer = setTimeout(() => ocDoSearch(q.trim()), 250);
+}
+
+async function ocDoSearch(q) {
+  try {
+    const res = await fetch(`${WORKER_URL}/api/oc-search?q=${encodeURIComponent(q)}`, {
+      headers: { 'X-Dashboard-Token': getToken() },
+    });
+    if (res.status === 401) { showLogin('Session expired. Please log in again.'); return; }
+    if (!res.ok) return;
+    const results = await res.json();
+    const dd = document.getElementById('oc-dropdown');
+    dd.innerHTML = results.length
+      ? results.map(r => `<div class="oc-dropdown-item" data-id="${r.id}" data-name="${r.name.replace(/"/g,'&quot;')}">${r.name}</div>`).join('')
+      : `<div class="oc-dropdown-empty">No matches found</div>`;
+    dd.querySelectorAll('.oc-dropdown-item').forEach(el => {
+      el.addEventListener('mousedown', (e) => {
+        e.preventDefault(); // prevent input blur before click fires
+        ocSelect(parseInt(el.dataset.id), el.dataset.name);
+      });
+    });
+    dd.style.display = 'block';
+  } catch {}
+}
+
+function ocSelect(id, name) {
+  ocSelectedId   = id;
+  ocSelectedName = name;
+  document.getElementById('oc-search-input').value = '';
+  document.getElementById('oc-dropdown').style.display = 'none';
+  document.getElementById('oc-badge-name').textContent = name;
+  document.getElementById('oc-badge').style.display = '';
+  document.getElementById('oc-placeholder').style.display = 'none';
+  document.getElementById('oc-metrics').style.display = '';
+  ocLoaded = false;
+  ocResetReport();
+  fetchOcData();
+}
+
+function ocClear() {
+  ocSelectedId = null; ocSelectedName = ''; ocLastData = null; ocLoaded = false;
+  ocResetReport();
+  document.getElementById('oc-badge').style.display = 'none';
+  document.getElementById('oc-metrics').style.display = 'none';
+  document.getElementById('oc-placeholder').style.display = '';
+  document.getElementById('oc-search-input').value = '';
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.oc-search-wrap')) {
+    const dd = document.getElementById('oc-dropdown');
+    if (dd) dd.style.display = 'none';
+  }
+});
+
+async function fetchOcData() {
+  if (!ocSelectedId) return;
+  const dateFrom = document.getElementById('date-from').value;
+  const dateTo   = document.getElementById('date-to').value;
+
+  const valIds  = ['oc-received','oc-approved','oc-completed','oc-not-completed','oc-fulfilment','oc-keys','oc-fobs','oc-remotes','oc-agent','oc-owner','oc-tenant','oc-hd-open','oc-hd-closed','oc-hd-respond','oc-hd-close','oc-hd-rate','oc-survey-sent','oc-survey-completed','oc-survey-partial','oc-survey-rate','oc-survey-nps'];
+  const cardIds = ['oc-card-received','oc-card-approved','oc-card-completed','oc-card-not-completed','oc-card-fulfilment','oc-card-items','oc-card-orders-by','oc-card-type-buckets','oc-hd-open-card','oc-hd-closed-card','oc-hd-respond-card','oc-hd-close-card','oc-hd-rate-card','oc-survey-sent-card','oc-survey-completed-card','oc-survey-partial-card','oc-survey-rate-card','oc-survey-nps-card'];
+  valIds.forEach(id => { const el = document.getElementById(id); if (el) { el.textContent = '—'; el.classList.add('loading'); } });
+  cardIds.forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('loaded'); });
+  ocLastData = null;
+  ocResetReport();
+
+  try {
+    const res = await fetch(`${WORKER_URL}/api/oc?from=${dateFrom}&to=${dateTo}&oc_id=${ocSelectedId}`, {
+      headers: { 'X-Dashboard-Token': getToken() },
+    });
+    if (res.status === 401) { showLogin('Session expired. Please log in again.'); return; }
+    if (!res.ok) throw new Error('fetch failed');
+    ocLastData = await res.json();
+    ocLastRange = { from: dateFrom, to: dateTo };
+    ocLoaded = true;
+    ocStale  = false;
+    renderOcData(ocLastData);
+    showCacheStatus(ocLastData._cachedAt);
+  } catch (e) {
+    console.error('OC fetch failed:', e);
+    ocLastData = null;
+    valIds.forEach(id => { if (document.getElementById(id)) setVal(id, '—'); });
+  }
+}
+
+function ocUpdateFulfilment() {
+  if (!ocLastData) return;
+  const mode = document.getElementById('oc-fulfilment-mode').value; // 'avg' | 'quickest' | 'longest'
+  const val  = ocLastData.fulfilment?.[mode] ?? null;
+  const prev = ocLastData.prevFulfilment?.[mode] ?? null;
+  const el = document.getElementById('oc-fulfilment');
+  el.textContent = val !== null ? `${val}d` : '—';
+  el.classList.remove('loading');
+  const meta = document.getElementById('oc-fulfilment-meta');
+  if (val !== null && prev !== null && prev !== 0) {
+    const chg = Math.round((val - prev) / prev * 1000) / 10;
+    const good = chg <= 0;
+    meta.innerHTML = `<span class="ab-pct ${good ? 'good' : 'bad'}">${chg > 0 ? '▲' : '▼'} ${Math.abs(chg)}%</span> vs prior period`;
+  } else {
+    meta.textContent = `${ocLastData.fulfilment?.count || 0} deliveries`;
+  }
+}
+
+function ocUpdateItems() {
+  if (!ocLastData) return;
+  const items = ocLastData.items || { keys: 0, fobs: 0, remotes: 0, total: 0 };
+  setVal('oc-keys',    items.keys.toLocaleString());
+  setVal('oc-fobs',    items.fobs.toLocaleString());
+  setVal('oc-remotes', items.remotes.toLocaleString());
+  document.getElementById('oc-items-total').textContent = `Total — ${items.total.toLocaleString()}`;
+  ['oc-keys','oc-fobs','oc-remotes'].forEach(id => { const el=document.getElementById(id); if(el) el.classList.remove('loading'); });
+}
+
+function renderOcData(d) {
+  const pctHtml = (chg) => {
+    if (chg === null) return '';
+    const cls = chg >= 0 ? 'good' : 'bad';
+    return `<span class="ab-pct ${cls}">${chg >= 0 ? '▲' : '▼'} ${Math.abs(chg)}%</span> vs prior period`;
+  };
+
+  setVal('oc-received', d.received.toLocaleString());
+  document.getElementById('oc-received-meta').innerHTML = pctHtml(d.receivedChg);
+  setVal('oc-approved', d.approved.toLocaleString());
+  document.getElementById('oc-approved-meta').innerHTML = pctHtml(d.approvedChg);
+  setVal('oc-completed', d.completed.toLocaleString());
+  document.getElementById('oc-completed-meta').innerHTML = pctHtml(d.completedChg);
+  setVal('oc-not-completed', (d.approved - d.completed).toLocaleString());
+  document.getElementById('oc-not-completed-meta').textContent = '';
+
+  ocUpdateFulfilment();
+  ocUpdateItems();
+
+  // Fulfilment breakdown buckets
+  const f = d.fulfilment;
+  if (f && f.count > 0) {
+    setVal('oc-ft-total-3',    f.within3.toLocaleString());
+    setVal('oc-ft-total-10',   f.within10.toLocaleString());
+    setVal('oc-ft-total-over', f.over10.toLocaleString());
+    document.getElementById('oc-ft-pct-3').textContent    = f.within3Pct + '% of orders';
+    document.getElementById('oc-ft-pct-10').textContent   = f.within10Pct + '% of orders';
+    document.getElementById('oc-ft-pct-over').textContent = f.over10Pct + '% of orders';
+    document.getElementById('oc-meta-buckets').textContent = `${f.count.toLocaleString()} completed orders`;
+  } else {
+    ['oc-ft-total-3','oc-ft-total-10','oc-ft-total-over'].forEach(id => setVal(id, '—'));
+    ['oc-ft-pct-3','oc-ft-pct-10','oc-ft-pct-over'].forEach(id => { document.getElementById(id).textContent = ''; });
+    document.getElementById('oc-meta-buckets').textContent = 'no delivery data';
+  }
+
+  setVal('oc-agent',  d.ordersByType.agent.toLocaleString());
+  setVal('oc-owner',  d.ordersByType.owner.toLocaleString());
+  setVal('oc-tenant', d.ordersByType.tenant.toLocaleString());
+  document.getElementById('oc-orders-by-total').textContent = `Total — ${d.ordersByType.total.toLocaleString()}`;
+
+  // Device type by fulfilment speed
+  function renderOcTypeBuckets(prefix, raw, totalElId) {
+    const pct = (n, t) => t > 0 ? Math.round(n / t * 1000) / 10 : 0;
+    const total = (raw?.within3 || 0) + (raw?.within10 || 0) + (raw?.over10 || 0);
+    document.getElementById(totalElId).textContent = total > 0 ? `(${total})` : '';
+    if (!raw || total === 0) {
+      ['bucket-3','bucket-10','bucket-over'].forEach(s => { document.getElementById(`${prefix}-${s}`).textContent = '—'; });
+      ['bar-3','bar-10','bar-over'].forEach(s => { document.getElementById(`${prefix}-${s}`).style.width = '0%'; });
+      return;
+    }
+    const w3 = raw.within3, w10 = raw.within10, ov = raw.over10;
+    document.getElementById(`${prefix}-bucket-3`).textContent    = `${w3} (${pct(w3, total)}%)`;
+    document.getElementById(`${prefix}-bucket-10`).textContent   = `${w10} (${pct(w10, total)}%)`;
+    document.getElementById(`${prefix}-bucket-over`).textContent = `${ov} (${pct(ov, total)}%)`;
+    document.getElementById(`${prefix}-bar-3`).style.width    = pct(w3, total) + '%';
+    document.getElementById(`${prefix}-bar-10`).style.width   = pct(w10, total) + '%';
+    document.getElementById(`${prefix}-bar-over`).style.width = pct(ov, total) + '%';
+  }
+  const db = d.deviceBuckets || {};
+  renderOcTypeBuckets('oc-kt', db.keys,    'oc-type-total-keys');
+  renderOcTypeBuckets('oc-ft', db.fobs,    'oc-type-total-fobs');
+  renderOcTypeBuckets('oc-rt', db.remotes, 'oc-type-total-remotes');
+
+  // Support tickets
+  const t = d.tickets || {};
+  setVal('oc-hd-open',    t.open != null ? t.open.toLocaleString() : '—');
+  setVal('oc-hd-closed',  t.closed != null ? t.closed.toLocaleString() : '—');
+  setVal('oc-hd-respond', t.avgRespond != null ? `${t.avgRespond}h` : '—');
+  setVal('oc-hd-close',   t.avgClose   != null ? `${t.avgClose}d`   : '—');
+  setVal('oc-hd-rate',    t.closingRate != null ? `${t.closingRate}%` : '—');
+
+  // Survey summary
+  const sv = d.survey || {};
+  setVal('oc-survey-sent',      sv.sent      != null ? sv.sent.toLocaleString()      : '—');
+  setVal('oc-survey-completed', sv.completed != null ? sv.completed.toLocaleString() : '—');
+  setVal('oc-survey-partial',   sv.partial   != null ? sv.partial.toLocaleString()   : '—');
+  setVal('oc-survey-rate',      sv.responseRate != null ? `${sv.responseRate}%`      : '—');
+  const npsEl = document.getElementById('oc-survey-nps');
+  if (npsEl) {
+    npsEl.textContent = sv.npsScore != null ? (sv.npsScore > 0 ? `+${sv.npsScore}` : `${sv.npsScore}`) : '—';
+    npsEl.style.color = sv.npsScore == null ? '' : sv.npsScore >= 50 ? 'var(--green)' : sv.npsScore >= 0 ? 'var(--amber)' : 'var(--red)';
+    npsEl.classList.remove('loading');
+  }
+
+  const valIds  = ['oc-received','oc-approved','oc-completed','oc-not-completed','oc-keys','oc-fobs','oc-remotes','oc-agent','oc-owner','oc-tenant','oc-hd-open','oc-hd-closed','oc-hd-respond','oc-hd-close','oc-hd-rate','oc-survey-sent','oc-survey-completed','oc-survey-rate','oc-survey-nps'];
+  const cardIds = ['oc-card-received','oc-card-approved','oc-card-completed','oc-card-not-completed','oc-card-fulfilment','oc-card-items','oc-card-orders-by','oc-card-type-buckets','oc-hd-open-card','oc-hd-closed-card','oc-hd-respond-card','oc-hd-close-card','oc-hd-rate-card','oc-survey-sent-card','oc-survey-completed-card','oc-survey-rate-card','oc-survey-nps-card'];
+  valIds.forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('loading'); });
+  cardIds.forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('loaded'); });
+}
+
+// ── OC Summary report (Claude, called directly from the browser) ──
+const OC_PROMPT_KEY  = 'kz_oc_prompt';
+const OC_MODEL_KEY   = 'kz_oc_model';
+const CLAUDE_KEY_KEY = 'kz_claude_key';
+const OC_DEFAULT_MODEL  = 'claude-opus-5-5';
+const OC_DEFAULT_PROMPT = `You are writing a performance summary for {{oc_name}}, an Owners Corporation (strata building) that Keyzee supplies keys, fobs and remotes to on behalf of its owners, tenants and agents.
+
+Write 2–3 short paragraphs summarising Keyzee's service to this OC for the period {{date_from}} to {{date_to}}. The reader is the OC committee or building manager. The goal is to reinforce the value of the relationship so they keep working with Keyzee.
+
+Cover:
+- Orders: how many were received, completed and are still open
+- Fulfilment performance: average fulfilment time and the share of orders completed within 3 and within 10 days
+- Delivery timeframes: how quickly residents received their items, and what was sent (keys, fobs, remotes)
+- Support tickets: volume, response time, time to close and closing rate
+
+Tone and rules:
+- Warm, professional and positive. Lead with strengths and wins.
+- Frame weaker numbers constructively (context, what we're focused on improving). Don't dwell on them, but don't misrepresent them either.
+- Only use figures from the data below — never invent or estimate numbers. If a metric is missing or zero, leave it out rather than drawing attention to it.
+- Mention prior-period changes only where they're favourable or add useful context. For fulfilment time, lower is better.
+- Write as Keyzee ("we"), addressed to the OC. Australian English.
+- Plain prose only: no headings, bullet points, bold or markdown. Don't add a greeting or sign-off.
+
+Data:
+{{stats}}`;
+
+let ocReportSeq  = 0;  // ignore responses for an OC/period that's no longer selected
+let ocReportText = '';
+
+function ocGetPrompt() { return localStorage.getItem(OC_PROMPT_KEY) || OC_DEFAULT_PROMPT; }
+function ocGetModel()  { return localStorage.getItem(OC_MODEL_KEY)  || OC_DEFAULT_MODEL; }
+
+function ocFmtLongDate(v) {
+  return new Date(v + 'T00:00:00').toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function ocPromptVars(d, range) {
+  const f  = d.fulfilment || {};
+  const t  = d.tickets || {};
+  const sv = d.survey || {};
+  const it = d.items || {};
+  const ob = d.ordersByType || {};
+  const db = d.deviceBuckets || {};
+  const chg = (c) => c == null ? '' : ` (${c >= 0 ? '+' : ''}${c}% vs prior period)`;
+  const na  = (v, suffix = '') => v == null ? 'n/a' : `${v}${suffix}`;
+  const open = d.approved - d.completed;
+
+  const lines = [
+    'Orders',
+    `- Received: ${d.received}${chg(d.receivedChg)}`,
+    `- Approved: ${d.approved}${chg(d.approvedChg)}`,
+    `- Completed: ${d.completed}${chg(d.completedChg)}`,
+    `- Still open: ${open}`,
+    `- Placed by: ${ob.agent || 0} agents, ${ob.owner || 0} owners, ${ob.tenant || 0} tenants`,
+    '',
+    'Fulfilment time (days from processing start to delivery done; lower is better)',
+    `- Average: ${na(f.avg, ' days')}${f.avg != null && d.prevFulfilment?.avg != null ? ` (prior period ${d.prevFulfilment.avg} days)` : ''}`,
+    `- Quickest: ${na(f.quickest, ' days')}`,
+    `- Longest: ${na(f.longest, ' days')}`,
+    '',
+    `Delivery timeframes (${f.count || 0} completed deliveries)`,
+  ];
+  if (f.count > 0) {
+    lines.push(
+      `- Within 3 days: ${f.within3} (${f.within3Pct}%)`,
+      `- 4–10 days: ${f.within10} (${f.within10Pct}%)`,
+      `- Over 10 days: ${f.over10} (${f.over10Pct}%)`,
+    );
+  }
+  [['Keys', db.keys], ['Fobs', db.fobs], ['Remotes', db.remotes]].forEach(([label, b]) => {
+    const total = (b?.within3 || 0) + (b?.within10 || 0) + (b?.over10 || 0);
+    if (total > 0) lines.push(`- ${label}: ${b.within3} within 3 days, ${b.within10} in 4–10 days, ${b.over10} over 10 days`);
+  });
+  lines.push(
+    '',
+    `Items sent: ${it.keys || 0} keys, ${it.fobs || 0} fobs, ${it.remotes || 0} remotes (${it.total || 0} total)`,
+    '',
+    'Support tickets',
+    `- Open: ${na(t.open)}`,
+    `- Closed: ${na(t.closed)}`,
+    `- Average time to first response: ${na(t.avgRespond, ' hours')}`,
+    `- Average time to close: ${na(t.avgClose, ' days')}`,
+    `- Closing rate: ${na(t.closingRate, '%')}`,
+    '',
+    'Customer surveys',
+    `- Sent: ${na(sv.sent)}, completed: ${na(sv.completed)}, partial: ${na(sv.partial)}`,
+    `- Response rate: ${na(sv.responseRate, '%')}`,
+    `- NPS (−100 to +100): ${na(sv.npsScore)}`,
+  );
+
+  return {
+    oc_name:  ocSelectedName,
+    date_from: ocFmtLongDate(range.from),
+    date_to:   ocFmtLongDate(range.to),
+    stats:    lines.join('\n'),
+    received: d.received,
+    completed: d.completed,
+    open,
+    avg_fulfilment_days: na(f.avg),
+    within3_pct:  na(f.within3Pct, '%'),
+    within10_pct: na(f.within10Pct, '%'),
+    tickets_open:   na(t.open),
+    tickets_closed: na(t.closed),
+    nps: na(sv.npsScore),
+  };
+}
+
+function ocFillPrompt(template, d, range) {
+  const vars = ocPromptVars(d, range);
+  return template.replace(/\{\{(\w+)\}\}/g, (m, k) => (k in vars ? String(vars[k]) : m));
+}
+
+function ocResetReport() {
+  ocReportSeq++;
+  ocReportText = '';
+  const body = document.getElementById('oc-report-body');
+  body.innerHTML = '<div class="oc-report-empty">Generate a 2–3 paragraph summary of this OC\'s performance for the selected period.</div>';
+  document.getElementById('oc-report-meta').textContent = '';
+  document.getElementById('oc-report-copy').style.display = 'none';
+  document.getElementById('oc-report-card').classList.remove('loaded');
+  const btn = document.getElementById('oc-report-btn');
+  btn.disabled = false;
+  btn.textContent = 'Generate Report';
+}
+
+function ocShowReportMessage(msg, cls) {
+  const div = document.createElement('div');
+  div.className = cls;
+  div.textContent = msg;
+  document.getElementById('oc-report-body').replaceChildren(div);
+}
+
+async function ocGenerateReport() {
+  if (!ocLastData || !ocLastRange) { ocShowReportMessage('Wait for the OC stats to finish loading, then try again.', 'oc-report-empty'); return; }
+  const apiKey = localStorage.getItem(CLAUDE_KEY_KEY);
+  if (!apiKey) { ocOpenPromptEditor('Add a Claude API key to generate reports.'); return; }
+
+  const seq   = ++ocReportSeq;
+  const model = ocGetModel();
+  const btn   = document.getElementById('oc-report-btn');
+  btn.disabled = true;
+  btn.textContent = 'Writing…';
+  document.getElementById('oc-report-copy').style.display = 'none';
+  document.getElementById('oc-report-meta').textContent = '';
+  ocShowReportMessage(`Writing a summary for ${ocSelectedName}…`, 'oc-report-empty');
+
+  const body = {
+    model,
+    max_tokens: 16000,
+    output_config: { effort: 'low' },
+    messages: [{ role: 'user', content: ocFillPrompt(ocGetPrompt(), ocLastData, ocLastRange) }],
+  };
+  const headers = {
+    'content-type': 'application/json',
+    'x-api-key': apiKey,
+    'anthropic-version': '2023-06-01',
+    'anthropic-dangerous-direct-browser-access': 'true',
+  };
+  // Haiku has no server-side fallback; Opus/Sonnet retry declined requests on another model
+  if (!model.startsWith('claude-haiku')) {
+    body.fallbacks = 'default';
+    headers['anthropic-beta'] = 'server-side-fallback-2026-07-01';
+  }
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers, body: JSON.stringify(body) });
+    const j = await res.json().catch(() => ({}));
+    if (seq !== ocReportSeq) return;
+    if (res.status === 401) throw new Error('Claude API key was rejected. Check it under ✎ Edit Prompt.');
+    if (!res.ok) throw new Error(j.error?.message || `Claude API error (HTTP ${res.status})`);
+    if (j.stop_reason === 'refusal') throw new Error('Claude declined to write this summary. Try adjusting the prompt.');
+    const text = (j.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
+    if (!text) throw new Error('Claude returned an empty response. Try again.');
+
+    ocReportText = text;
+    const paras = text.split(/\n\s*\n/).map(t => {
+      const p = document.createElement('p');
+      p.textContent = t.trim();
+      return p;
+    });
+    document.getElementById('oc-report-body').replaceChildren(...paras);
+    document.getElementById('oc-report-meta').textContent =
+      `${ocFmtLongDate(ocLastRange.from)} – ${ocFmtLongDate(ocLastRange.to)} · ${j.model || model}`;
+    document.getElementById('oc-report-copy').style.display = '';
+    document.getElementById('oc-report-card').classList.add('loaded');
+    btn.textContent = 'Regenerate';
+  } catch (e) {
+    if (seq !== ocReportSeq) return;
+    console.error('OC report failed:', e);
+    ocShowReportMessage(e.message || 'Failed to generate report.', 'oc-report-error');
+    btn.textContent = 'Generate Report';
+  } finally {
+    if (seq === ocReportSeq) btn.disabled = false;
+  }
+}
+
+async function ocCopyReport() {
+  if (!ocReportText) return;
+  const btn = document.getElementById('oc-report-copy');
+  try {
+    await navigator.clipboard.writeText(ocReportText);
+    btn.textContent = 'Copied';
+  } catch {
+    btn.textContent = 'Copy failed';
+  }
+  setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
+}
+
+function ocOpenPromptEditor(msg) {
+  document.getElementById('prompt-msg').textContent = msg || '';
+  document.getElementById('prompt-api-key').value = localStorage.getItem(CLAUDE_KEY_KEY) || '';
+  document.getElementById('prompt-model').value   = ocGetModel();
+  document.getElementById('prompt-text').value    = ocGetPrompt();
+  ocUpdatePromptPreview();
+  document.getElementById('prompt-overlay').style.display = 'flex';
+}
+
+function ocClosePromptEditor() {
+  document.getElementById('prompt-overlay').style.display = 'none';
+}
+
+function ocUpdatePromptPreview() {
+  const el = document.getElementById('prompt-preview');
+  const template = document.getElementById('prompt-text').value;
+  el.textContent = ocLastData && ocLastRange
+    ? ocFillPrompt(template, ocLastData, ocLastRange)
+    : 'Select an OC and wait for its stats to load to see the filled-in prompt.';
+}
+
+function ocResetPrompt() {
+  document.getElementById('prompt-text').value  = OC_DEFAULT_PROMPT;
+  document.getElementById('prompt-model').value = OC_DEFAULT_MODEL;
+  ocUpdatePromptPreview();
+}
+
+function ocSavePromptEditor() {
+  const key    = document.getElementById('prompt-api-key').value.trim();
+  const model  = document.getElementById('prompt-model').value;
+  const prompt = document.getElementById('prompt-text').value;
+  if (key) localStorage.setItem(CLAUDE_KEY_KEY, key); else localStorage.removeItem(CLAUDE_KEY_KEY);
+  // Store only overrides so future changes to the defaults still reach unedited prompts
+  if (prompt.trim() && prompt !== OC_DEFAULT_PROMPT) localStorage.setItem(OC_PROMPT_KEY, prompt); else localStorage.removeItem(OC_PROMPT_KEY);
+  if (model !== OC_DEFAULT_MODEL) localStorage.setItem(OC_MODEL_KEY, model); else localStorage.removeItem(OC_MODEL_KEY);
+  ocClosePromptEditor();
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && document.getElementById('prompt-overlay').style.display === 'flex') ocClosePromptEditor();
+});
+
+async function fetchNps() {
+  const dateFrom = document.getElementById('date-from').value;
+  const dateTo   = document.getElementById('date-to').value;
+  ['nps-sent','nps-completed','nps-partial','nps-rate','nps-score','nps-promoters','nps-passives','nps-detractors'].forEach(id => {
+    const el = document.getElementById(id); if (el) { el.textContent = '—'; el.classList.add('loading'); }
+  });
+  ['nps-card-sent','nps-card-completed','nps-card-partial','nps-card-rate','nps-card-score'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.classList.remove('loaded');
+  });
+  document.getElementById('nps-comments').innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--muted)">Loading…</div>';
+  try {
+    const res = await fetch(`${WORKER_URL}/api/nps?from=${dateFrom}&to=${dateTo}`, {
+      headers: { 'X-Dashboard-Token': getToken() },
+    });
+    if (res.status === 401) { showLogin('Session expired. Please log in again.'); return; }
+    if (!res.ok) throw new Error('fetch failed');
+    const d = await res.json();
+    npsLoaded = true; npsStale = false;
+    renderNps(d);
+    showCacheStatus(d._cachedAt);
+  } catch(e) {
+    console.error('NPS fetch failed:', e);
+    ['nps-sent','nps-completed','nps-partial','nps-rate','nps-score','nps-promoters','nps-passives','nps-detractors'].forEach(id => {
+      if (document.getElementById(id)) setVal(id, '—');
+    });
+    document.getElementById('nps-comments').innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--muted);grid-column:1/-1">Failed to load</div>';
+  }
+}
+
+function showCacheStatus(cachedAt) {
+  const el = document.getElementById('sync-status');
+  if (!el) return;
+  if (!cachedAt) { el.textContent = ''; return; }
+  const mins = Math.round((Date.now() - new Date(cachedAt)) / 60000);
+  if (mins < 1) el.textContent = 'synced just now';
+  else if (mins < 60) el.textContent = `synced ${mins}m ago`;
+  else el.textContent = `synced ${Math.round(mins/60)}h ago`;
+}
+
+async function syncCache() {
+  const btn = document.getElementById('sync-btn');
+  const el  = document.getElementById('sync-status');
+  btn.disabled = true;
+  btn.textContent = '↻ Syncing…';
+  if (el) el.textContent = '';
+  try {
+    await fetch(`${WORKER_URL}/api/sync`, { headers: { 'X-Dashboard-Token': getToken() } });
+    // Mark everything stale so re-fetches happen
+    helpdeskStale = true; purchasingStale = true; ocStale = true; npsStale = true;
+    warehouseLoaded = false; purchasingLoaded = false; helpdeskLoaded = false; npsLoaded = false;
+    // Re-fetch current tab + sales
+    fetchData();
+    if (activeTab === 'support')   fetchHelpdesk();
+    if (activeTab === 'purchasing') fetchPurchasing();
+    if (activeTab === 'warehouse')  fetchWarehouse();
+    if (activeTab === 'nps')        fetchNps();
+    if (activeTab === 'oc' && ocSelectedId) { ocLoaded = false; fetchOcData(); }
+    if (el) el.textContent = 'synced just now';
+  } catch(e) {
+    if (el) el.textContent = 'sync failed';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '↻ Sync';
+  }
+}
+
+function daysAgo(dateStr) {
+  if (!dateStr) return null;
+  const d = Math.floor((Date.now() - new Date(dateStr.replace(' ','T')+'Z')) / 86400000);
+  if (d <= 0) return 'today';
+  return d === 1 ? '1 day ago' : `${d} days ago`;
+}
+
+function renderNps(d) {
+  setVal('nps-sent',      d.sent      != null ? d.sent.toLocaleString()      : '—');
+  setVal('nps-completed', d.completed != null ? d.completed.toLocaleString() : '—');
+  setVal('nps-partial',   d.partial   != null ? d.partial.toLocaleString()   : '—');
+  setVal('nps-rate',      d.responseRate != null ? `${d.responseRate}%`      : '—');
+  const scoreEl = document.getElementById('nps-score');
+  if (scoreEl) {
+    scoreEl.textContent = d.npsScore != null ? (d.npsScore > 0 ? `+${d.npsScore}` : `${d.npsScore}`) : '—';
+    scoreEl.style.color = d.npsScore == null ? '' : d.npsScore >= 50 ? 'var(--green)' : d.npsScore >= 0 ? 'var(--amber)' : 'var(--red)';
+    scoreEl.classList.remove('loading');
+  }
+
+  setVal('nps-promoters',  d.promoters  != null ? d.promoters.toLocaleString()  : '—');
+  setVal('nps-passives',   d.passives   != null ? d.passives.toLocaleString()   : '—');
+  setVal('nps-detractors', d.detractors != null ? d.detractors.toLocaleString() : '—');
+  ['nps-promoters','nps-passives','nps-detractors','nps-partial'].forEach(id => {
+    const e = document.getElementById(id); if(e) e.classList.remove('loading');
+  });
+
+  const setMeta = (id, pct) => { const el = document.getElementById(id); if(el) el.textContent = pct != null ? `${pct}%` : ''; };
+  setMeta('nps-promoters-pct', d.promotersPct);
+  setMeta('nps-passives-pct',  d.passivesPct);
+  setMeta('nps-detractors-pct',d.detractorsPct);
+  const setBar = (id, pct) => { const el = document.getElementById(id); if(el) el.style.width = (pct || 0) + '%'; };
+  setBar('nps-promoters-bar',  d.promotersPct);
+  setBar('nps-passives-bar',   d.passivesPct);
+  setBar('nps-detractors-bar', d.detractorsPct);
+
+  ['nps-card-sent','nps-card-completed','nps-card-partial','nps-card-rate','nps-card-score'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.classList.add('loaded');
+  });
+
+  // Comments
+  const wrap = document.getElementById('nps-comments');
+  if (d.recentComments && d.recentComments.length > 0) {
+    wrap.innerHTML = d.recentComments.map(c => {
+      const text  = c.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const ago   = daysAgo(c.createDate);
+      const order = c.saleOrderId
+        ? `<a class="nps-comment-order" href="https://keyzee.odoo.com/web#id=${c.saleOrderId}&model=sale.order&view_type=form" target="_blank">${c.saleOrderName} ↗</a>`
+        : '';
+      const response = c.inputId
+        ? `<a class="nps-comment-order" href="https://keyzee.odoo.com/web#id=${c.inputId}&model=survey.user_input&view_type=form" target="_blank">View Response ↗</a>`
+        : '';
+      return `<div class="nps-comment-card">
+        <div class="nps-comment-text">${text}</div>
+        <div class="nps-comment-meta">
+          <span class="nps-comment-contact">${c.contact ? c.contact.replace(/</g,'&lt;') : ''}</span>
+          <span class="nps-comment-right">
+            ${response}
+            ${order}
+            ${ago ? `<span class="nps-comment-date">${ago}</span>` : ''}
+          </span>
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    wrap.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--muted);grid-column:1/-1">No comments in this period.</div>';
+  }
+}
+
+document.getElementById('login-password').addEventListener('keydown', e => {
+  if (e.key === 'Enter') submitLogin();
+});
+
+defaultDates();
+
+// Restore last active tab
+const savedTab = localStorage.getItem('kz_tab');
+if (savedTab && savedTab !== 'sales') {
+  const btn = document.querySelector(`.tab-btn[onclick="switchTab('${savedTab}')"]`);
+  if (btn) btn.click();
+}
+
+// Restore night mode preference
+if (localStorage.getItem('kz_night')) {
+  document.body.classList.add('night');
+  document.getElementById('night-toggle-btn').textContent = '☀️';
+}
+
+if (getToken()) {
+  hideLogin();
+  fetchData();
+} else {
+  showLogin();
+}
+</script>
+<script>
+  // ── Portfolio demo: UI tweaks that run after the dashboard script ──
+  (function () {
+    const bar = document.getElementById('demo-bar');
+    const setH = () => document.documentElement.style.setProperty('--demo-h', bar.offsetHeight + 'px');
+    setH(); addEventListener('resize', setH);
+
+    // AI summaries need a Claude key, so show an example instead of calling the API
+    window.ocOpenPromptEditor = () => demoToast('Prompt editing is disabled in this demo');
+    window.ocGenerateReport = function () {
+      const d = ocLastData; if (!d) return;
+      const f = d.fulfilment || {}, t = d.tickets || {};
+      const paras = [
+        `Over this period we received ${d.received} orders from ${ocSelectedName} and completed ${d.completed}, with ${d.approved - d.completed} still in progress. Most requests came from owners and agents, and we sent ${d.items.total} items in total across keys, fobs and remotes.`,
+        `Average fulfilment was ${f.avg} days, with ${f.within3Pct}% of orders delivered within three days and ${f.within3Pct + f.within10Pct}% within ten. That is an improvement on the prior period, when the average was ${d.prevFulfilment.avg} days.`,
+        `Support stayed responsive: we closed ${t.closed} tickets at a ${t.closingRate}% closing rate, with a first response in around ${t.avgRespond} hours on average.`,
+      ];
+      document.getElementById('oc-report-body').replaceChildren(...paras.map(p => Object.assign(document.createElement('p'), { textContent: p })));
+      document.getElementById('oc-report-meta').textContent = 'Example summary · AI generation is disabled in this demo';
+      document.getElementById('oc-report-card').classList.add('loaded');
+      document.getElementById('oc-report-copy').style.display = 'none';
+      document.getElementById('oc-report-btn').textContent = 'Regenerate';
+    };
+
+    // Preselect a sample Owners Corporation so the OC tab isn't empty
+    ocSelect(1001, 'Sample Towers OC');
+  })();
+</script>
+</body>
+</html>
