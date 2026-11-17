@@ -39,6 +39,13 @@
   .seg button { border: none; background: none; font: inherit; font-size: 13px; font-weight: 500; color: var(--ink-2); padding: 7px 14px; border-radius: 12px; cursor: pointer; }
   .seg button[aria-pressed="true"] { background: var(--moss); color: #fff; }
   .seg button:focus-visible { outline: 2px solid var(--s-current); outline-offset: 2px; }
+  .demo-bar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 16px; padding: 10px 24px; background: #8A5600; color: #fff; font-size: 13px; line-height: 1.4; box-shadow: 0 2px 10px rgba(0,0,0,.12); }
+  .demo-bar p { flex: 1; text-align: center; }
+  .demo-bar strong { font-weight: 600; }
+  .demo-back { color: #fff; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; font-weight: 500; }
+  .demo-back:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  .tile .lbl::after { content: 'SAMPLE'; margin-left: 8px; font-size: 9px; font-weight: 600; letter-spacing: .08em; color: #8A5600; background: #FBF3E4; border: 1px solid #EED9B0; padding: 1px 5px; border-radius: 6px; vertical-align: 1px; }
+  @media (max-width: 600px) { .demo-bar { flex-direction: column; gap: 4px; padding: 10px 14px; } .demo-bar p { text-align: left; order: -1; } .demo-back { align-self: flex-start; } }
   .sample { font-size: 12px; font-weight: 500; color: #8A5600; background: #FBF3E4; border: 1px solid #EED9B0; padding: 6px 10px; border-radius: var(--radius); }
 
   /* Cards */
@@ -111,6 +118,10 @@
 </style>
 </head>
 <body>
+<div class="demo-bar" role="note">
+  <a class="demo-back" href="../#work">← Back to portfolio</a>
+  <p><strong>Demo dashboard.</strong> Every figure here is made-up sample data, not real Le Coffee Shop numbers.</p>
+</div>
 <div class="wrap">
   <header>
     <div class="brand">
