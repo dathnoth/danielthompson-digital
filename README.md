@@ -23,6 +23,7 @@ A single-page, static site built as a **bento grid**: tiles for the intro, heads
 ├── images/
 │   ├── dt-logo.svg            # "dt_" cursor logo (dark backgrounds, animated cursor)
 │   ├── dt-logo-light.svg      # Logo for light backgrounds
+│   ├── dt-logo-on-white.svg   # Static, tightly cropped logo for white backgrounds
 │   ├── og-image.svg           # Source for the social share image
 │   ├── daniel-thompson-og-image.jpg   # Social share (OG/Twitter) image, rendered from og-image.svg
 │   ├── dt-headshot.png / dt-headshot2.png
